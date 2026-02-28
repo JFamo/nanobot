@@ -102,21 +102,71 @@ class MemoryStore:
             lines.append(f"[{m.get('timestamp', '?')[:16]}] {m['role'].upper()}{tools}: {m['content']}")
 
         current_memory = self.read_long_term()
-        prompt = f"""Process this conversation and call the save_memory tool with your consolidation.
+        prompt = f"""Process this conversation and perform the following tasks:
+
+## Task 1: Memory Consolidation (Required)
+Call the save_memory tool with your consolidation of the conversation.
 
 ## Current Long-term Memory
 {current_memory or "(empty)"}
 
 ## Conversation to Process
-{chr(10).join(lines)}"""
+{chr(10).join(lines)}
+
+## Task 2: Personality Analysis (Optional)
+Review the conversation for personality insights:
+- User preferences, habits, interests, or personal information
+- Communication patterns that worked well or poorly
+- Feedback about your behavior
+
+If you learned something meaningful about the user or your interaction patterns:
+1. Use read_file to check current USER.md or SOUL.md
+2. Use edit_file to update relevant sections (only if there's genuinely new information)
+
+Be selective - not every conversation needs personality updates. Only update when you've learned something significant."""
 
         try:
+            # Get file tools for personality updates
+            from nanobot.agent.tools.filesystem import ReadFileTool, EditFileTool
+            
+            workspace = self.memory_dir.parent  # Go up from memory/ to workspace/
+            read_tool = ReadFileTool(workspace=workspace)
+            edit_tool = EditFileTool(workspace=workspace)
+            
+            # Build tools list: save_memory + file tools
+            tools = list(_SAVE_MEMORY_TOOL)
+            tools.extend([
+                {
+                    "type": "function",
+                    "function": {
+                        "name": read_tool.name,
+                        "description": read_tool.description,
+                        "parameters": read_tool.parameters
+                    }
+                },
+                {
+                    "type": "function",
+                    "function": {
+                        "name": edit_tool.name,
+                        "description": edit_tool.description,
+                        "parameters": edit_tool.parameters
+                    }
+                }
+            ])
+            
+            system_prompt = """You are a memory consolidation agent. Your tasks:
+
+1. REQUIRED: Call the save_memory tool with conversation consolidation
+2. OPTIONAL: If you learned meaningful personality insights, update USER.md or SOUL.md using read_file and edit_file
+
+Be selective about personality updates - only update when there's genuinely new information."""
+            
             response = await provider.chat(
                 messages=[
-                    {"role": "system", "content": "You are a memory consolidation agent. Call the save_memory tool with your consolidation of the conversation."},
+                    {"role": "system", "content": system_prompt},
                     {"role": "user", "content": prompt},
                 ],
-                tools=_SAVE_MEMORY_TOOL,
+                tools=tools,
                 model=model,
             )
 

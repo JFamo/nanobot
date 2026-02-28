@@ -3,6 +3,7 @@
 import base64
 import mimetypes
 import platform
+import re
 import time
 from datetime import datetime
 from pathlib import Path
@@ -58,6 +59,11 @@ Skills with available="false" need dependencies installed first - you can try in
         system = platform.system()
         runtime = f"{'macOS' if system == 'Darwin' else system} {platform.machine()}, Python {platform.python_version()}"
         
+        # Get technical level and build communication guidelines
+        technical_level = self._get_technical_level()
+        comm_guidelines = self._build_communication_guidelines(technical_level)
+        personality_guidance = self._build_personality_learning_guidance()
+        
         return f"""# nanobot 🐈
 
 You are nanobot, a helpful AI assistant.
@@ -70,6 +76,12 @@ Your workspace is at: {workspace_path}
 - Long-term memory: {workspace_path}/memory/MEMORY.md (write important facts here)
 - History log: {workspace_path}/memory/HISTORY.md (grep-searchable). Each entry starts with [YYYY-MM-DD HH:MM].
 - Custom skills: {workspace_path}/skills/{{skill-name}}/SKILL.md
+- User profile: {workspace_path}/USER.md (learn about the user)
+- Your personality: {workspace_path}/SOUL.md (learn about yourself)
+
+{comm_guidelines}
+
+{personality_guidance}
 
 ## nanobot Guidelines
 - State intent before tool calls, but NEVER predict or claim results before receiving them.
@@ -80,6 +92,112 @@ Your workspace is at: {workspace_path}
 
 Reply directly with text for conversations. Only use the 'message' tool to send to a specific chat channel."""
 
+    def _get_technical_level(self) -> str:
+        """Extract technical level from USER.md, default to 'beginner'."""
+        user_file = self.workspace / "USER.md"
+        if not user_file.exists():
+            return "beginner"
+        
+        try:
+            content = user_file.read_text(encoding="utf-8")
+            # Look for checked boxes in Technical Level section
+            # Format: - [x] Beginner / - [x] Intermediate / - [x] Expert
+            if re.search(r'-\s*\[x\]\s*Expert', content, re.IGNORECASE):
+                return "expert"
+            elif re.search(r'-\s*\[x\]\s*Intermediate', content, re.IGNORECASE):
+                return "intermediate"
+            elif re.search(r'-\s*\[x\]\s*Beginner', content, re.IGNORECASE):
+                return "beginner"
+            
+            # Check for non-technical in Communication Style section
+            if re.search(r'-\s*\[x\]\s*Non-?technical', content, re.IGNORECASE):
+                return "non-technical"
+        except Exception:
+            pass
+        
+        return "beginner"
+    
+    def _build_communication_guidelines(self, technical_level: str) -> str:
+        """Build communication guidelines based on technical level."""
+        if technical_level == "non-technical":
+            return """## Communication Guidelines
+
+You are communicating with a non-technical user. Follow these rules:
+
+- Use plain, everyday language
+- Avoid technical jargon (no terms like "API", "CLI", "JSON", "configuration file", "terminal", "command line")
+- Explain actions in simple terms (e.g., "I'll save this information" instead of "I'll write to the memory file")
+- Focus on WHAT you're doing, not HOW it works internally
+- Only show technical details if the user explicitly asks
+- Use analogies and simple explanations
+- Avoid showing code, file paths, or system internals unless requested"""
+        
+        elif technical_level == "beginner":
+            return """## Communication Guidelines
+
+You are communicating with a beginner-level user:
+
+- Use clear, simple language
+- Minimize technical jargon, explain terms when needed
+- Provide context for technical concepts
+- Be patient and thorough in explanations"""
+        
+        elif technical_level == "intermediate":
+            return """## Communication Guidelines
+
+You are communicating with an intermediate-level user:
+
+- Use technical terms appropriately
+- Provide technical details when relevant
+- Balance clarity with technical accuracy"""
+        
+        else:  # expert
+            return """## Communication Guidelines
+
+You are communicating with an expert-level user:
+
+- Use technical terminology freely
+- Provide detailed technical information
+- Be concise and precise"""
+    
+    def _build_personality_learning_guidance(self) -> str:
+        """Build guidance for personality learning."""
+        return """## Personality Learning
+
+You should actively learn about the user throughout conversations:
+
+**When to update USER.md:**
+- User shares personal information, preferences, or habits
+- You learn about their work context, projects, or tools they use
+- User mentions topics of interest or hobbies
+- User provides feedback about communication style or response preferences
+- You discover their preferred technical level or communication style
+
+**When to update SOUL.md:**
+- You notice communication patterns that work well with this user
+- User provides feedback about your behavior or personality
+- You identify approaches that resonate with this specific user
+- You learn mistakes to avoid or adjustments to make
+
+**How to update:**
+1. Use `read_file` to check current content of USER.md or SOUL.md
+2. Use `edit_file` to update relevant sections
+3. Be thoughtful - only update when you learn something meaningful
+4. Keep updates concise and relevant
+5. Don't update during every conversation - only when there's genuinely new information
+
+**USER.md sections to update:**
+- Basic Information (name, timezone, language)
+- Preferences (Communication Style, Response Length, Technical Level)
+- Work Context (role, projects, tools)
+- Topics of Interest
+- Special Instructions
+
+**SOUL.md updates:**
+- Add new sections as needed to track what works with this user
+- Document communication patterns and preferences
+- Note feedback and adjustments"""
+    
     @staticmethod
     def _build_runtime_context(channel: str | None, chat_id: str | None) -> str:
         """Build untrusted runtime metadata block for injection before the user message."""
