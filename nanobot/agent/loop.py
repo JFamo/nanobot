@@ -18,7 +18,46 @@ from nanobot.agent.memory import MemoryStore
 from nanobot.agent.subagent import SubagentManager
 from nanobot.agent.tools.cron import CronTool
 from nanobot.agent.tools.filesystem import EditFileTool, ListDirTool, ReadFileTool, WriteFileTool
-from nanobot.agent.tools.google import GmailSendTool, GoogleCalendarCreateEventTool, GoogleDriveUploadTool
+from nanobot.agent.tools.google import (
+    GmailSendTool,
+    GmailListTool,
+    GmailGetTool,
+    GmailSearchTool,
+    GmailReplyTool,
+    GmailTrashTool,
+    GmailCreateDraftTool,
+    GmailListLabelsTool,
+    GoogleCalendarCreateEventTool,
+    GoogleCalendarListEventsTool,
+    GoogleCalendarGetEventTool,
+    GoogleCalendarUpdateEventTool,
+    GoogleCalendarDeleteEventTool,
+    GoogleCalendarListCalendarsTool,
+    GoogleDriveUploadTool,
+    GoogleDriveListTool,
+    GoogleDriveGetTool,
+    GoogleDriveDownloadTool,
+    GoogleDriveCreateFolderTool,
+    GoogleDriveDeleteTool,
+    GoogleDriveShareTool,
+    GoogleDriveSearchTool,
+    GoogleDocsCreateTool,
+    GoogleDocsGetTool,
+    GoogleDocsAppendTool,
+    GoogleDocsInsertTool,
+    GoogleSheetsCreateTool,
+    GoogleSheetsGetTool,
+    GoogleSheetsReadRangeTool,
+    GoogleSheetsWriteRangeTool,
+    GoogleSheetsAppendRowsTool,
+    GoogleSheetsClearRangeTool,
+    GoogleContactsListTool,
+    GoogleContactsGetTool,
+    GoogleContactsCreateTool,
+    GoogleContactsUpdateTool,
+    GoogleContactsDeleteTool,
+    GoogleContactsSearchTool,
+)
 from nanobot.agent.tools.message import MessageTool
 from nanobot.agent.tools.registry import ToolRegistry
 from nanobot.agent.tools.shell import ExecTool
@@ -126,9 +165,50 @@ class AgentLoop:
         self.tools.register(MessageTool(send_callback=self.bus.publish_outbound))
         self.tools.register(SpawnTool(manager=self.subagents))
         if os.environ.get("BOT_ID") and os.environ.get("COORDINATOR_URL"):
+            # Gmail
             self.tools.register(GmailSendTool())
+            self.tools.register(GmailListTool())
+            self.tools.register(GmailGetTool())
+            self.tools.register(GmailSearchTool())
+            self.tools.register(GmailReplyTool())
+            self.tools.register(GmailTrashTool())
+            self.tools.register(GmailCreateDraftTool())
+            self.tools.register(GmailListLabelsTool())
+            # Calendar
             self.tools.register(GoogleCalendarCreateEventTool())
+            self.tools.register(GoogleCalendarListEventsTool())
+            self.tools.register(GoogleCalendarGetEventTool())
+            self.tools.register(GoogleCalendarUpdateEventTool())
+            self.tools.register(GoogleCalendarDeleteEventTool())
+            self.tools.register(GoogleCalendarListCalendarsTool())
+            # Drive
             self.tools.register(GoogleDriveUploadTool())
+            self.tools.register(GoogleDriveListTool())
+            self.tools.register(GoogleDriveGetTool())
+            self.tools.register(GoogleDriveDownloadTool())
+            self.tools.register(GoogleDriveCreateFolderTool())
+            self.tools.register(GoogleDriveDeleteTool())
+            self.tools.register(GoogleDriveShareTool())
+            self.tools.register(GoogleDriveSearchTool())
+            # Docs
+            self.tools.register(GoogleDocsCreateTool())
+            self.tools.register(GoogleDocsGetTool())
+            self.tools.register(GoogleDocsAppendTool())
+            self.tools.register(GoogleDocsInsertTool())
+            # Sheets
+            self.tools.register(GoogleSheetsCreateTool())
+            self.tools.register(GoogleSheetsGetTool())
+            self.tools.register(GoogleSheetsReadRangeTool())
+            self.tools.register(GoogleSheetsWriteRangeTool())
+            self.tools.register(GoogleSheetsAppendRowsTool())
+            self.tools.register(GoogleSheetsClearRangeTool())
+            # Contacts
+            self.tools.register(GoogleContactsListTool())
+            self.tools.register(GoogleContactsGetTool())
+            self.tools.register(GoogleContactsCreateTool())
+            self.tools.register(GoogleContactsUpdateTool())
+            self.tools.register(GoogleContactsDeleteTool())
+            self.tools.register(GoogleContactsSearchTool())
         if self.cron_service:
             self.tools.register(CronTool(self.cron_service))
 
