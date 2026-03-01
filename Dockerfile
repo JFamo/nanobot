@@ -30,14 +30,17 @@ WORKDIR /app/bridge
 RUN npm install && npm run build
 WORKDIR /app
 
-# Install gog (gogcli) — Google Suite CLI for Gmail, Calendar, Drive, etc.
-RUN GOG_TAG=$(curl -fsSL https://api.github.com/repos/steipete/gogcli/releases/latest | jq -r '.tag_name') && \
-    GOG_VERSION=${GOG_TAG#v} && \
-    curl -fsSL "https://github.com/steipete/gogcli/releases/download/${GOG_TAG}/gogcli_${GOG_VERSION}_linux_amd64.tar.gz" \
-      -o /tmp/gogcli.tar.gz && \
-    tar -xz -C /usr/local/bin -f /tmp/gogcli.tar.gz gog && \
-    chmod +x /usr/local/bin/gog && \
-    rm /tmp/gogcli.tar.gz
+# Install axios globally for HTTP requests from scripts
+RUN npm install -g axios
+
+# # Install gog (gogcli) — Google Suite CLI for Gmail, Calendar, Drive, etc.
+# RUN GOG_TAG=$(curl -fsSL https://api.github.com/repos/steipete/gogcli/releases/latest | jq -r '.tag_name') && \
+#     GOG_VERSION=${GOG_TAG#v} && \
+#     curl -fsSL "https://github.com/steipete/gogcli/releases/download/${GOG_TAG}/gogcli_${GOG_VERSION}_linux_amd64.tar.gz" \
+#       -o /tmp/gogcli.tar.gz && \
+#     tar -xz -C /usr/local/bin -f /tmp/gogcli.tar.gz gog && \
+#     chmod +x /usr/local/bin/gog && \
+#     rm /tmp/gogcli.tar.gz
 
 # Create config directory
 RUN mkdir -p /root/.nanobot

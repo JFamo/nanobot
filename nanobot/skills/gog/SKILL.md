@@ -1,36 +1,82 @@
 ---
 name: gog
-description: Google Workspace CLI for Gmail, Calendar, Drive, Contacts, Sheets, and Docs.
-homepage: https://gogcli.sh
-metadata: {"clawdbot":{"emoji":"🎮","requires":{"bins":["gog"]},"install":[{"id":"brew","kind":"brew","formula":"steipete/tap/gogcli","bins":["gog"],"label":"Install gog (brew)"}]}}
+description: Google Workspace actions via internal coordinator endpoints (Gmail, Calendar, Drive).
 ---
 
-# gog
+# Google Workspace Actions
 
-Use `gog` for Gmail/Calendar/Drive/Contacts/Sheets/Docs. Requires OAuth setup.
+Use internal coordinator endpoints for Gmail, Calendar, and Drive operations. OAuth is handled centrally — you never manage tokens.
 
-Setup (once)
-- `gog auth credentials /path/to/client_secret.json`
-- `gog auth add you@gmail.com --services gmail,calendar,drive,contacts,sheets,docs`
-- `gog auth list`
+## Environment
 
-Common commands
-- Gmail search: `gog gmail search 'newer_than:7d' --max 10`
-- Gmail send: `gog gmail send --to a@b.com --subject "Hi" --body "Hello"`
-- Calendar: `gog calendar events <calendarId> --from <iso> --to <iso>`
-- Drive search: `gog drive search "query" --max 10`
-- Contacts: `gog contacts list --max 20`
-- Sheets get: `gog sheets get <sheetId> "Tab!A1:D10" --json`
-- Sheets update: `gog sheets update <sheetId> "Tab!A1:B2" --values-json '[["A","B"],["1","2"]]' --input USER_ENTERED`
-- Sheets append: `gog sheets append <sheetId> "Tab!A:C" --values-json '[["x","y","z"]]' --insert INSERT_ROWS`
-- Sheets clear: `gog sheets clear <sheetId> "Tab!A2:Z"`
-- Sheets metadata: `gog sheets metadata <sheetId> --json`
-- Docs export: `gog docs export <docId> --format txt --out /tmp/doc.txt`
-- Docs cat: `gog docs cat <docId>`
+Two env vars are injected automatically:
+- `COORDINATOR_URL` — base URL of control server (e.g. `http://nanobot-coordinator:8000`)
+- `INTERNAL_SERVICE_TOKEN` — bearer token for internal auth
 
-Notes
-- Set `GOG_ACCOUNT=you@gmail.com` to avoid repeating `--account`.
-- For scripting, prefer `--json` plus `--no-input`.
-- Sheets values can be passed via `--values-json` (recommended) or as inline rows.
-- Docs supports export/cat/copy. In-place edits require a Docs API client (not in gog).
-- Confirm before sending mail or creating events.
+## Gmail: Send Email
+
+```bash
+node -e "
+const axios = require('axios');
+axios.post(process.env.COORDINATOR_URL + '/internal/google/gmail/send', {
+  user_id: '<user_id>',
+  to: 'recipient@example.com',
+  subject: 'Hello from nanobot',
+  body: 'This is the email body.'
+}, {
+  headers: { 'Authorization': 'Bearer ' + process.env.INTERNAL_SERVICE_TOKEN }
+}).then(r => console.log(JSON.stringify(r.data)))
+  .catch(e => console.error(e.response?.data || e.message));
+"
+```
+
+Response: `{"success": true, "message_id": "...", "thread_id": "..."}`
+
+## Drive: Upload File
+
+```bash
+node -e "
+const axios = require('axios');
+const fs = require('fs');
+const fileBuffer = fs.readFileSync('/path/to/file.pdf').toString('base64');
+axios.post(process.env.COORDINATOR_URL + '/internal/google/drive/upload', {
+  user_id: '<user_id>',
+  file_name: 'report.pdf',
+  mime_type: 'application/pdf',
+  file_buffer: fileBuffer
+}, {
+  headers: { 'Authorization': 'Bearer ' + process.env.INTERNAL_SERVICE_TOKEN }
+}).then(r => console.log(JSON.stringify(r.data)))
+  .catch(e => console.error(e.response?.data || e.message));
+"
+```
+
+Response: `{"success": true, "file_id": "...", "web_view_link": "..."}`
+
+## Calendar: Create Event
+
+```bash
+node -e "
+const axios = require('axios');
+axios.post(process.env.COORDINATOR_URL + '/internal/google/calendar/create-event', {
+  user_id: '<user_id>',
+  summary: 'Team standup',
+  start: '2026-03-02T10:00:00Z',
+  end: '2026-03-02T10:30:00Z',
+  attendees: ['alice@example.com', 'bob@example.com']
+}, {
+  headers: { 'Authorization': 'Bearer ' + process.env.INTERNAL_SERVICE_TOKEN }
+}).then(r => console.log(JSON.stringify(r.data)))
+  .catch(e => console.error(e.response?.data || e.message));
+"
+```
+
+Response: `{"success": true, "event_id": "...", "html_link": "..."}`
+
+## Notes
+
+- Replace `<user_id>` with the authenticated user's ID (provided by the coordinator when invoking the agent).
+- All datetime fields use ISO 8601 format with timezone (prefer UTC with `Z` suffix).
+- If a call fails with 401, the user has not linked their Google account yet.
+- Confirm with the user before sending emails or creating calendar events.
+- Use `exec` to run node one-liners; do not use curl (not available in the container).
