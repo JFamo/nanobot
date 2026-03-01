@@ -1,109 +1,83 @@
 ---
 name: gog
-description: Google Workspace actions (Gmail, Calendar, Drive) via coordinator. Use for sending emails, creating calendar events, or uploading files to Drive.
+description: Google Workspace actions (Gmail, Calendar, Drive) via the google tool. Use for sending emails, creating calendar events, or uploading files to Drive.
+always: true
 ---
 
 # Google Workspace (gog)
 
-This skill lets you send emails, create calendar events, and upload files to Google Drive on behalf of the user.
+You can send emails, create calendar events, and upload files to Google Drive using the **`google` tool**.
 
-## IMPORTANT: How this skill works
+## How to use
 
-This is **not** a native tool. You execute it by running Node.js one-liners with the `exec` tool.
+**ALWAYS use the native `google` tool** — call it directly as a tool call with the parameters below. **NEVER use `exec`, `node -e`, axios, curl, or any shell command for Google actions.** The native tool handles authentication and avoids shell-escaping issues with special characters.
 
-All required connection details are already available as environment variables — **never ask the user for any of these**:
+Call the `google` tool with `action` set to one of:
+- `gmail_send` — send an email
+- `calendar_create_event` — create a calendar event
+- `drive_upload` — upload a file to Google Drive
 
-| Variable | What it is |
-|----------|------------|
-| `process.env.COORDINATOR_URL` | Base URL of the coordinator server |
-| `process.env.BOT_ID` | Your bot identity (used to look up the user's Google account) |
-
-If the user's Google account is not linked yet, you will receive a `404` error. Tell the user to link their Google account via the bot configuration and do not retry.
-
----
-
-## Before you act
-
-1. Gather all required information from the user's message (see each section below).
-2. **Always confirm the action with the user** before executing — repeat back the key details.
-3. Use `exec` to run the node one-liner.
-4. Report back the result clearly (e.g., share the calendar event link, confirm email was sent).
+Authentication is fully automatic. **Never ask the user for credentials, tokens, bot_id, user_id, or coordinator URL.**
 
 ---
 
 ## Gmail: Send Email
 
-**Required**: `to`, `subject`, `body`
+**Required parameters**: `action`, `to`, `subject`, `body`
 
-```bash
-node -e "
-const axios = require('axios');
-axios.post(process.env.COORDINATOR_URL + '/internal/google/gmail/send', {
-  bot_id: process.env.BOT_ID,
-  to: 'recipient@example.com',
-  subject: 'Subject here',
-  body: 'Email body here.'
-}).then(r => console.log(JSON.stringify(r.data)))
-  .catch(e => console.error(e.response?.data || e.message));
-"
+Example:
+```json
+{
+  "action": "gmail_send",
+  "to": "recipient@example.com",
+  "subject": "Meeting follow-up",
+  "body": "Thanks for attending the meeting today."
+}
 ```
-
-Response: `{"success": true, "message_id": "...", "thread_id": "..."}`
 
 ---
 
 ## Calendar: Create Event
 
-**Required**: `summary`, `start`, `end`  
-**Optional**: `attendees` (array of emails), `location` (string), `description` (string)
+**Required parameters**: `action`, `summary`, `start`, `end`
+**Optional**: `attendees`, `location`, `event_description`
 
-All times must be ISO 8601 with timezone (e.g., `2026-03-01T21:00:00-05:00` for 9 PM EST).
+All times must be ISO 8601 with timezone offset.
 
-```bash
-node -e "
-const axios = require('axios');
-axios.post(process.env.COORDINATOR_URL + '/internal/google/calendar/create-event', {
-  bot_id: process.env.BOT_ID,
-  summary: 'Team standup',
-  start: '2026-03-02T10:00:00Z',
-  end: '2026-03-02T10:30:00Z',
-  attendees: ['alice@example.com', 'bob@example.com'],
-  location: 'New York, NY',
-  description: 'Weekly sync'
-}).then(r => console.log(JSON.stringify(r.data)))
-  .catch(e => console.error(e.response?.data || e.message));
-"
+Example:
+```json
+{
+  "action": "calendar_create_event",
+  "summary": "Team standup",
+  "start": "2026-03-06T18:00:00-05:00",
+  "end": "2026-03-06T20:00:00-05:00",
+  "attendees": ["alice@example.com"],
+  "location": "Boston, MA",
+  "event_description": "Weekly sync"
+}
 ```
 
-Response: `{"success": true, "event_id": "...", "html_link": "...", "summary": "..."}`
-
-**Timezone tip**: Convert user-provided times to ISO 8601 with explicit offset. For example:
-- 9 PM EST → `T21:00:00-05:00`
-- 9 PM PST → `T21:00:00-08:00`
-- 9 PM UTC → `T21:00:00Z`
+**Timezone conversions**:
+- EST = `-05:00`
+- CST = `-06:00`
+- PST = `-08:00`
+- UTC = `Z`
 
 ---
 
 ## Drive: Upload File
 
-**Required**: `file_name`, `mime_type`, `file_buffer` (base64-encoded content)
+**Required parameters**: `action`, `file_name`, `mime_type`, `file_path`
 
-```bash
-node -e "
-const axios = require('axios');
-const fs = require('fs');
-const fileBuffer = fs.readFileSync('/path/to/file.pdf').toString('base64');
-axios.post(process.env.COORDINATOR_URL + '/internal/google/drive/upload', {
-  bot_id: process.env.BOT_ID,
-  file_name: 'report.pdf',
-  mime_type: 'application/pdf',
-  file_buffer: fileBuffer
-}).then(r => console.log(JSON.stringify(r.data)))
-  .catch(e => console.error(e.response?.data || e.message));
-"
+Example:
+```json
+{
+  "action": "drive_upload",
+  "file_name": "report.pdf",
+  "mime_type": "application/pdf",
+  "file_path": "/path/to/report.pdf"
+}
 ```
-
-Response: `{"success": true, "file_id": "...", "web_view_link": "..."}`
 
 ---
 
@@ -111,23 +85,15 @@ Response: `{"success": true, "file_id": "...", "web_view_link": "..."}`
 
 | Error | Meaning | What to do |
 |-------|---------|------------|
-| `404` | Google account not linked for this bot | Tell user to link their Google account in bot settings |
-| `401` / `403` | Google token expired or revoked | Tell user to re-link their Google account |
-| Network error | Coordinator unreachable | Retry once; if it persists, report the error |
+| Google account not linked | 404 from coordinator | Tell user to link their Google account in bot settings |
+| Token expired / revoked | 401 / 403 | Tell user to re-link their Google account |
+| Request timed out | Network issue | Retry once; if it persists, report the error |
 
 ---
 
-## Workflow examples
+## Before you act
 
-### "Send an email to john@example.com saying the meeting is at 3pm"
-
-1. Confirm: "I'll send an email to john@example.com with subject '...' and body '...'. Shall I proceed?"
-2. On confirmation, run the Gmail one-liner.
-3. Report: "Email sent successfully."
-
-### "Create a calendar event for our team lunch tomorrow at noon for 1 hour"
-
-1. Determine the date and timezone from context (check memory or ask once if unknown).
-2. Confirm: "I'll create 'Team Lunch' on [date] from 12:00 PM to 1:00 PM [timezone]. Should I add any attendees?"
-3. Run the Calendar one-liner.
-4. Report: "Event created! Here's the link: [html_link]"
+1. Gather all the required information from the user's message.
+2. **Confirm the action with the user** before calling the tool — repeat back the key details.
+3. Call the `google` tool.
+4. Report the result (share event link, confirm email was sent, etc.).

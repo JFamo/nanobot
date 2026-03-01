@@ -49,19 +49,14 @@ Access env vars via `process.env`:
 ```bash
 node -e "
 const axios = require('axios');
-const url = process.env.COORDINATOR_URL + '/internal/google/gmail/send';
-const token = process.env.INTERNAL_SERVICE_TOKEN;
-axios.post(url, {
-  user_id: 'demo-user',
-  to: 'test@example.com',
-  subject: 'Hello',
-  body: 'Test message'
-}, {
-  headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' }
-}).then(r => console.log(r.data))
+const url = process.env.API_URL + '/data';
+axios.get(url)
+  .then(r => console.log(JSON.stringify(r.data, null, 2)))
   .catch(e => console.error(e.response?.data || e.message));
 "
 ```
+
+**Important:** Do NOT use axios for Google Workspace actions (Gmail, Calendar, Drive). Use the native `google` tool instead — it handles authentication and avoids shell-escaping issues.
 
 ## Writing to a script file
 
