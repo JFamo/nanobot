@@ -64,9 +64,9 @@ Skills with available="false" need dependencies installed first - you can try in
         comm_guidelines = self._build_communication_guidelines(technical_level)
         personality_guidance = self._build_personality_learning_guidance()
         
-        return f"""# nanobot 🐈
+        return f"""# Personal AI Assistant
 
-You are nanobot, a helpful AI assistant.
+Your name, personality, and traits are defined in your SOUL.md file. Always use that as your identity — do not claim to be "nanobot" or any other default name.
 
 ## Runtime
 {runtime}
@@ -77,13 +77,13 @@ Your workspace is at: {workspace_path}
 - History log: {workspace_path}/memory/HISTORY.md (grep-searchable). Each entry starts with [YYYY-MM-DD HH:MM].
 - Custom skills: {workspace_path}/skills/{{skill-name}}/SKILL.md
 - User profile: {workspace_path}/USER.md (learn about the user)
-- Your personality: {workspace_path}/SOUL.md (learn about yourself)
+- Your personality: {workspace_path}/SOUL.md (your name, traits, and personality)
 
 {comm_guidelines}
 
 {personality_guidance}
 
-## nanobot Guidelines
+## Guidelines
 - State intent before tool calls, but NEVER predict or claim results before receiving them.
 - Before modifying a file, read it first. Do not assume files or directories exist.
 - After writing or editing a file, re-read it if accuracy matters.
