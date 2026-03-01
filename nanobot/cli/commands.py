@@ -443,6 +443,10 @@ def agent(
 
     if logs:
         logger.enable("nanobot")
+        # Write logs to a persistent file in the nanobot volume so they can be
+        # inspected with: docker exec <container> tail /root/.nanobot/agent.log
+        from nanobot.logging_config import configure_logging
+        configure_logging(level="DEBUG", log_file=str(config.workspace_path.parent / "agent.log"))
     else:
         logger.disable("nanobot")
     
