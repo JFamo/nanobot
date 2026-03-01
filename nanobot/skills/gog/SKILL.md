@@ -79,4 +79,4 @@ Response: `{"success": true, "event_id": "...", "html_link": "..."}`
 - All datetime fields use ISO 8601 format with timezone (prefer UTC with `Z` suffix).
 - If a call fails with 401, the user has not linked their Google account yet.
 - Confirm with the user before sending emails or creating calendar events.
-- Use `exec` to run node one-liners; do not use curl (not available in the container).
+- Use `exec` to run node one-liners. axios is available via `require('axios')` in any node script.

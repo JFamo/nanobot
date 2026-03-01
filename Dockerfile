@@ -30,8 +30,12 @@ WORKDIR /app/bridge
 RUN npm install && npm run build
 WORKDIR /app
 
-# Install axios globally for HTTP requests from scripts
-RUN npm install -g axios
+# Install axios into a shared lib directory and expose via NODE_PATH
+RUN mkdir -p /usr/local/lib/node_modules_shared && \
+    cd /usr/local/lib/node_modules_shared && \
+    npm init -y && \
+    npm install axios
+ENV NODE_PATH=/usr/local/lib/node_modules_shared/node_modules
 
 # # Install gog (gogcli) — Google Suite CLI for Gmail, Calendar, Drive, etc.
 # RUN GOG_TAG=$(curl -fsSL https://api.github.com/repos/steipete/gogcli/releases/latest | jq -r '.tag_name') && \
