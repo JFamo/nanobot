@@ -33,6 +33,15 @@ class TelegramConfig(Base):
     reply_to_message: bool = False  # If true, bot replies quote the original message
 
 
+class TelegramRelayConfig(Base):
+    """Telegram relay channel configuration (HTTP-based via coordinator)."""
+
+    enabled: bool = False
+    mode: str = "relay"  # Always "relay" for this channel type
+    coordinator_url: str = ""  # Coordinator service URL (e.g. "http://nanobot-coordinator:8000")
+    bot_id: str = ""  # Bot ID registered with coordinator
+
+
 class FeishuConfig(Base):
     """Feishu/Lark channel configuration using WebSocket long connection."""
 
@@ -206,6 +215,7 @@ class ChannelsConfig(Base):
     send_tool_hints: bool = False  # stream tool-call hints (e.g. read_file("…"))
     whatsapp: WhatsAppConfig = Field(default_factory=WhatsAppConfig)
     telegram: TelegramConfig = Field(default_factory=TelegramConfig)
+    telegram_relay: TelegramRelayConfig = Field(default_factory=TelegramRelayConfig)
     discord: DiscordConfig = Field(default_factory=DiscordConfig)
     feishu: FeishuConfig = Field(default_factory=FeishuConfig)
     mochat: MochatConfig = Field(default_factory=MochatConfig)
