@@ -15,7 +15,11 @@ class GoogleSheetsCreateTool(GoogleBaseTool):
     def description(self) -> str:
         return (
             "Create a new Google Spreadsheet with a given title. Returns the spreadsheet ID and URL. "
-            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id."
+            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id.\n\n"
+            "DISPLAY FORMAT: Always include this directive in your response so the UI renders a preview card:\n"
+            '::google-sheet{url="<spreadsheet_url>" title="<spreadsheet_title>" size="default"}\n'
+            "Replace placeholders with actual values from the response.\n"
+            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.'
         )
 
     @property
@@ -50,7 +54,11 @@ class GoogleSheetsGetTool(GoogleBaseTool):
     def description(self) -> str:
         return (
             "Get metadata for a Google Spreadsheet, including sheet names and dimensions. "
-            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id."
+            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id.\n\n"
+            "DISPLAY FORMAT: Include this directive when referencing the spreadsheet:\n"
+            '::google-sheet{url="https://docs.google.com/spreadsheets/d/<spreadsheet_id>/edit" title="<spreadsheet_title>" size="default"}\n'
+            "Replace placeholders with actual values.\n"
+            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.'
         )
 
     @property
@@ -86,7 +94,11 @@ class GoogleSheetsReadRangeTool(GoogleBaseTool):
         return (
             "Read cell values from a range in a Google Spreadsheet using A1 notation "
             "(e.g. 'Sheet1!A1:D10'). Returns a 2D array of values. "
-            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id."
+            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id.\n\n"
+            "DISPLAY FORMAT: Include this directive when referencing the spreadsheet:\n"
+            '::google-sheet{url="https://docs.google.com/spreadsheets/d/<spreadsheet_id>/edit" title="<spreadsheet_title>" size="default"}\n'
+            "Replace placeholders with actual values.\n"
+            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.'
         )
 
     @property
@@ -130,7 +142,11 @@ class GoogleSheetsWriteRangeTool(GoogleBaseTool):
         return (
             "Write data to a range in a Google Spreadsheet. "
             "Provide values as a 2D array (rows of columns). "
-            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id."
+            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id.\n\n"
+            "DISPLAY FORMAT: Include this directive when confirming the update:\n"
+            '::google-sheet{url="https://docs.google.com/spreadsheets/d/<spreadsheet_id>/edit" title="<spreadsheet_title>" size="default"}\n'
+            "Replace placeholders with actual values.\n"
+            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.'
         )
 
     @property
@@ -182,7 +198,11 @@ class GoogleSheetsAppendRowsTool(GoogleBaseTool):
     def description(self) -> str:
         return (
             "Append rows to a Google Spreadsheet after the last row with data. "
-            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id."
+            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id.\n\n"
+            "DISPLAY FORMAT: Include this directive when confirming the update:\n"
+            '::google-sheet{url="https://docs.google.com/spreadsheets/d/<spreadsheet_id>/edit" title="<spreadsheet_title>" size="default"}\n'
+            "Replace placeholders with actual values.\n"
+            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.'
         )
 
     @property

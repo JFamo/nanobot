@@ -17,7 +17,11 @@ class GoogleDriveUploadTool(GoogleBaseTool):
     def description(self) -> str:
         return (
             "Upload a file to Google Drive. "
-            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id."
+            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id.\n\n"
+            "DISPLAY FORMAT: Include this directive when presenting the uploaded file:\n"
+            '::google-drive{name="<file_name>" url="https://drive.google.com/file/d/<file_id>/view" type="file" size="default"}\n'
+            "Replace placeholders with actual values from the response.\n"
+            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.'
         )
 
     @property
@@ -68,7 +72,11 @@ class GoogleDriveListTool(GoogleBaseTool):
     def description(self) -> str:
         return (
             "List files in Google Drive, optionally filtering by query or folder. "
-            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id."
+            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id.\n\n"
+            "DISPLAY FORMAT: Include a directive for EACH file in your response:\n"
+            '::google-drive{name="<file_name>" url="<webViewLink>" type="file" size="compact"}\n'
+            "Use compact size when listing multiple files. For folders use type=\"folder\". Replace placeholders with actual values.\n"
+            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.'
         )
 
     @property
@@ -115,7 +123,11 @@ class GoogleDriveGetTool(GoogleBaseTool):
     def description(self) -> str:
         return (
             "Get metadata for a Google Drive file by ID (name, type, size, owner, link). "
-            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id."
+            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id.\n\n"
+            "DISPLAY FORMAT: Include this directive when presenting file details:\n"
+            '::google-drive{name="<file_name>" url="<webViewLink>" type="file" size="default"}\n'
+            "Replace placeholders with actual values. For folders use type=\"folder\".\n"
+            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.'
         )
 
     @property
@@ -186,7 +198,11 @@ class GoogleDriveCreateFolderTool(GoogleBaseTool):
     def description(self) -> str:
         return (
             "Create a folder in Google Drive. "
-            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id."
+            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id.\n\n"
+            "DISPLAY FORMAT: Include this directive when presenting the created folder:\n"
+            '::google-drive{name="<folder_name>" url="https://drive.google.com/drive/folders/<folder_id>" type="folder" size="default"}\n'
+            "Replace placeholders with actual values from the response.\n"
+            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.'
         )
 
     @property
@@ -314,7 +330,11 @@ class GoogleDriveSearchTool(GoogleBaseTool):
         return (
             "Search for files in Google Drive using Drive query syntax, "
             "e.g. \"name contains 'report'\" or \"mimeType='application/pdf'\". "
-            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id."
+            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id.\n\n"
+            "DISPLAY FORMAT: Include a directive for EACH matching file in your response:\n"
+            '::google-drive{name="<file_name>" url="<webViewLink>" type="file" size="compact"}\n'
+            "Use compact size when listing multiple results. For folders use type=\"folder\". Replace placeholders with actual values.\n"
+            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.'
         )
 
     @property

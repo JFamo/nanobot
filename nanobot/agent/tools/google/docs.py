@@ -16,10 +16,10 @@ class GoogleDocsCreateTool(GoogleBaseTool):
         return (
             "Create a new Google Doc with a given title. Returns the document ID and URL. "
             "Authentication is automatic — never ask the user for credentials, tokens, or bot_id.\n\n"
-            "DISPLAY FORMAT: When presenting the created document to the user, "
-            "always include this directive in your response so the UI renders a rich preview card:\n"
-            '::google-doc{url="<document_url>" title="<document_title>"}\n'
-            "Replace <document_url> and <document_title> with the actual values from the response."
+            "DISPLAY FORMAT: Always include this directive in your response so the UI renders a preview card:\n"
+            '::google-doc{url="<document_url>" title="<document_title>" size="default"}\n'
+            "Replace <document_url> and <document_title> with actual values from the response.\n"
+            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.'
         )
 
     @property
@@ -55,10 +55,10 @@ class GoogleDocsGetTool(GoogleBaseTool):
         return (
             "Read the plain text content of a Google Doc by its document ID. "
             "Authentication is automatic — never ask the user for credentials, tokens, or bot_id.\n\n"
-            "DISPLAY FORMAT: When referencing this document in your response, "
-            "include this directive so the UI renders a rich preview card:\n"
-            '::google-doc{url="https://docs.google.com/document/d/<document_id>/edit" title="<document_title>"}\n'
-            "Replace <document_id> and <document_title> with the actual values."
+            "DISPLAY FORMAT: Include this directive when referencing the document:\n"
+            '::google-doc{url="https://docs.google.com/document/d/<document_id>/edit" title="<document_title>" size="default"}\n'
+            "Replace <document_id> and <document_title> with actual values.\n"
+            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.'
         )
 
     @property
@@ -94,10 +94,10 @@ class GoogleDocsAppendTool(GoogleBaseTool):
         return (
             "Append text to the end of a Google Doc. "
             "Authentication is automatic — never ask the user for credentials, tokens, or bot_id.\n\n"
-            "DISPLAY FORMAT: When confirming the update to the user, "
-            "include this directive so the UI renders a rich preview card:\n"
-            '::google-doc{url="https://docs.google.com/document/d/<document_id>/edit" title="<document_title>"}\n'
-            "Replace <document_id> and <document_title> with the actual values."
+            "DISPLAY FORMAT: Include this directive when confirming the update:\n"
+            '::google-doc{url="https://docs.google.com/document/d/<document_id>/edit" title="<document_title>" size="default"}\n'
+            "Replace <document_id> and <document_title> with actual values.\n"
+            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.'
         )
 
     @property
@@ -142,10 +142,10 @@ class GoogleDocsInsertTool(GoogleBaseTool):
             "Insert text at a specific character index in a Google Doc. "
             "Use docs_get first to determine the correct index position. "
             "Authentication is automatic — never ask the user for credentials, tokens, or bot_id.\n\n"
-            "DISPLAY FORMAT: When confirming the update to the user, "
-            "include this directive so the UI renders a rich preview card:\n"
-            '::google-doc{url="https://docs.google.com/document/d/<document_id>/edit" title="<document_title>"}\n'
-            "Replace <document_id> and <document_title> with the actual values."
+            "DISPLAY FORMAT: Include this directive when confirming the update:\n"
+            '::google-doc{url="https://docs.google.com/document/d/<document_id>/edit" title="<document_title>" size="default"}\n'
+            "Replace <document_id> and <document_title> with actual values.\n"
+            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.'
         )
 
     @property
