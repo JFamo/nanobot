@@ -15,7 +15,11 @@ class GoogleDocsCreateTool(GoogleBaseTool):
     def description(self) -> str:
         return (
             "Create a new Google Doc with a given title. Returns the document ID and URL. "
-            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id."
+            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id.\n\n"
+            "DISPLAY FORMAT: When presenting the created document to the user, "
+            "always include this directive in your response so the UI renders a rich preview card:\n"
+            '::google-doc{url="<document_url>" title="<document_title>"}\n'
+            "Replace <document_url> and <document_title> with the actual values from the response."
         )
 
     @property
@@ -50,7 +54,11 @@ class GoogleDocsGetTool(GoogleBaseTool):
     def description(self) -> str:
         return (
             "Read the plain text content of a Google Doc by its document ID. "
-            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id."
+            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id.\n\n"
+            "DISPLAY FORMAT: When referencing this document in your response, "
+            "include this directive so the UI renders a rich preview card:\n"
+            '::google-doc{url="https://docs.google.com/document/d/<document_id>/edit" title="<document_title>"}\n'
+            "Replace <document_id> and <document_title> with the actual values."
         )
 
     @property
@@ -85,7 +93,11 @@ class GoogleDocsAppendTool(GoogleBaseTool):
     def description(self) -> str:
         return (
             "Append text to the end of a Google Doc. "
-            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id."
+            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id.\n\n"
+            "DISPLAY FORMAT: When confirming the update to the user, "
+            "include this directive so the UI renders a rich preview card:\n"
+            '::google-doc{url="https://docs.google.com/document/d/<document_id>/edit" title="<document_title>"}\n'
+            "Replace <document_id> and <document_title> with the actual values."
         )
 
     @property
@@ -129,7 +141,11 @@ class GoogleDocsInsertTool(GoogleBaseTool):
         return (
             "Insert text at a specific character index in a Google Doc. "
             "Use docs_get first to determine the correct index position. "
-            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id."
+            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id.\n\n"
+            "DISPLAY FORMAT: When confirming the update to the user, "
+            "include this directive so the UI renders a rich preview card:\n"
+            '::google-doc{url="https://docs.google.com/document/d/<document_id>/edit" title="<document_title>"}\n'
+            "Replace <document_id> and <document_title> with the actual values."
         )
 
     @property
