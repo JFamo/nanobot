@@ -26,8 +26,14 @@ class CronTool(Tool):
     
     @property
     def description(self) -> str:
-        return "Schedule reminders and recurring tasks. Actions: add, list, remove."
-    
+        return (
+            "Schedule reminders and recurring tasks. Actions: add, list, remove. "
+            "For add: write `message` as the notification text you want the user to receive "
+            "(e.g. 'Time to go outside!'). "
+            "Use `at` for one-time reminders (compute the ISO datetime). "
+            "Use `every_seconds` ONLY for truly recurring/repeating tasks, never for one-time reminders."
+        )
+
     @property
     def parameters(self) -> dict[str, Any]:
         return {
@@ -40,11 +46,11 @@ class CronTool(Tool):
                 },
                 "message": {
                     "type": "string",
-                    "description": "Reminder message (for add)"
+                    "description": "The notification text to deliver to the user (e.g. 'Time to go outside!'). Write it as you would say it to them."
                 },
                 "every_seconds": {
                     "type": "integer",
-                    "description": "Interval in seconds (for recurring tasks)"
+                    "description": "Interval in seconds for RECURRING tasks only (e.g. every hour = 3600). Do NOT use this for one-time reminders."
                 },
                 "cron_expr": {
                     "type": "string",

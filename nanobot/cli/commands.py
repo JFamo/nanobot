@@ -310,11 +310,23 @@ def gateway(
     # Set cron callback (needs agent)
     async def on_cron_job(job: CronJob) -> str | None:
         """Execute a cron job through the agent."""
+        channel = job.payload.channel or "cli"
+        chat_id = job.payload.to or "direct"
+        # Use the user's session so the agent has full personality + history context.
+        # Fall back to a cron-scoped session for non-delivery jobs.
+        if job.payload.deliver and job.payload.channel and job.payload.to:
+            session_key = f"{channel}:{chat_id}"
+        else:
+            session_key = f"cron:{job.id}"
+        prompt = (
+            f"[SCHEDULED REMINDER] A reminder you scheduled is now due. "
+            f"Deliver this message to the user in your own voice: {job.payload.message}"
+        )
         response = await agent.process_direct(
-            job.payload.message,
-            session_key=f"cron:{job.id}",
-            channel=job.payload.channel or "cli",
-            chat_id=job.payload.to or "direct",
+            prompt,
+            session_key=session_key,
+            channel=channel,
+            chat_id=chat_id,
         )
         if job.payload.deliver and job.payload.to:
             from nanobot.bus.events import OutboundMessage
