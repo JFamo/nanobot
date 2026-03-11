@@ -1,0 +1,50 @@
+"""HTTP client for outbound calls to the coordinator service.
+
+All requests automatically include the NANOBOT_API_KEY bearer token so
+individual tools and channels don't need to manage auth headers themselves.
+"""
+
+import json
+import os
+from typing import Any
+
+import httpx
+
+
+def auth_headers() -> dict[str, str]:
+    """Return the Authorization header dict for coordinator requests.
+
+    Call this when constructing a long-lived httpx.AsyncClient so the token
+    is baked in, or pass the result as `headers=` to individual requests.
+    """
+    api_key = os.environ.get("NANOBOT_API_KEY", "")
+    return {"Authorization": f"Bearer {api_key}"} if api_key else {}
+
+
+async def post(url: str, payload: dict[str, Any], timeout: float = 30) -> str:
+    """POST JSON to the coordinator and return a normalised result string.
+
+    Returns the JSON-encoded response body on success, or an "Error: ..."
+    string on network/HTTP failure — matching the contract expected by all
+    Google and X tool implementations.
+    """
+    try:
+        async with httpx.AsyncClient(timeout=timeout) as client:
+            resp = await client.post(url, json=payload, headers=auth_headers())
+    except httpx.ConnectError:
+        return "Error: Could not connect to coordinator. Is COORDINATOR_URL correct?"
+    except httpx.TimeoutException:
+        return f"Error: Request timed out after {int(timeout)} seconds."
+    except httpx.HTTPError as exc:
+        return f"Error: HTTP request failed: {exc}"
+
+    try:
+        data = resp.json()
+    except Exception:
+        return f"Error: Non-JSON response (status {resp.status_code}): {resp.text[:500]}"
+
+    if resp.is_success and data.get("success"):
+        return json.dumps(data, indent=2)
+
+    detail = data.get("detail") or data.get("error") or json.dumps(data)
+    return f"Error (HTTP {resp.status_code}): {detail}"

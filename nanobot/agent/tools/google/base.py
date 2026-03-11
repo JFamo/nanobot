@@ -1,12 +1,10 @@
 """Shared helpers for Google Workspace tools."""
 
-import json
 import os
 from typing import Any
 
-import httpx
-
 from nanobot.agent.tools.base import Tool
+from nanobot import coordinator
 
 
 class GoogleBaseTool(Tool):
@@ -29,25 +27,4 @@ class GoogleBaseTool(Tool):
 
     @staticmethod
     async def _post(url: str, payload: dict[str, Any]) -> str:
-        api_key = os.environ.get("NANOBOT_API_KEY", "")
-        headers = {"Authorization": f"Bearer {api_key}"} if api_key else {}
-        try:
-            async with httpx.AsyncClient(timeout=30) as client:
-                resp = await client.post(url, json=payload, headers=headers)
-        except httpx.ConnectError:
-            return "Error: Could not connect to coordinator. Is COORDINATOR_URL correct?"
-        except httpx.TimeoutException:
-            return "Error: Request timed out after 30 seconds."
-        except httpx.HTTPError as exc:
-            return f"Error: HTTP request failed: {exc}"
-
-        try:
-            data = resp.json()
-        except Exception:
-            return f"Error: Non-JSON response (status {resp.status_code}): {resp.text[:500]}"
-
-        if resp.is_success and data.get("success"):
-            return json.dumps(data, indent=2)
-
-        detail = data.get("detail") or data.get("error") or json.dumps(data)
-        return f"Error (HTTP {resp.status_code}): {detail}"
+        return await coordinator.client.post(url, payload)
