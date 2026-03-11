@@ -29,9 +29,11 @@ class XBaseTool(Tool):
 
     @staticmethod
     async def _post(url: str, payload: dict[str, Any]) -> str:
+        api_key = os.environ.get("NANOBOT_API_KEY", "")
+        headers = {"Authorization": f"Bearer {api_key}"} if api_key else {}
         try:
             async with httpx.AsyncClient(timeout=30) as client:
-                resp = await client.post(url, json=payload)
+                resp = await client.post(url, json=payload, headers=headers)
         except httpx.ConnectError:
             return "Error: Could not connect to coordinator. Is COORDINATOR_URL correct?"
         except httpx.TimeoutException:

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import os
 from typing import Any
 
 import httpx
@@ -40,7 +41,8 @@ class TelegramRelayChannel(BaseChannel):
             return
         
         self._running = True
-        
+        self._api_key = os.environ.get("NANOBOT_API_KEY", "")
+
         self._client = httpx.AsyncClient(
             timeout=httpx.Timeout(30.0, connect=10.0),
             limits=httpx.Limits(max_keepalive_connections=5, max_connections=10)
@@ -91,10 +93,13 @@ class TelegramRelayChannel(BaseChannel):
             try:
                 logger.debug("Sending message to coordinator: {}", url)
                 
+                headers = {"Content-Type": "application/json"}
+                if self._api_key:
+                    headers["Authorization"] = f"Bearer {self._api_key}"
                 response = await self._client.post(
                     url,
                     json=payload,
-                    headers={"Content-Type": "application/json"}
+                    headers=headers,
                 )
                 
                 if response.status_code == 200:
