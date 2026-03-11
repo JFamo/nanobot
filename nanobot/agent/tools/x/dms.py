@@ -33,6 +33,10 @@ class XSendDmTool(XBaseTool):
             "required": ["participant_id", "text"],
         }
 
+    @property
+    def requires_confirmation(self) -> bool:
+        return True
+
     async def execute(self, **kwargs: Any) -> str:
         env = self._env()
         if isinstance(env, str):

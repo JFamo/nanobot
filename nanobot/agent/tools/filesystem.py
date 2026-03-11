@@ -96,7 +96,11 @@ class WriteFileTool(Tool):
             },
             "required": ["path", "content"]
         }
-    
+
+    @property
+    def requires_confirmation(self) -> bool:
+        return True
+
     async def execute(self, path: str, content: str, **kwargs: Any) -> str:
         try:
             file_path = _resolve_path(path, self._workspace, self._allowed_dir)
@@ -144,7 +148,11 @@ class EditFileTool(Tool):
             },
             "required": ["path", "old_text", "new_text"]
         }
-    
+
+    @property
+    def requires_confirmation(self) -> bool:
+        return True
+
     async def execute(self, path: str, old_text: str, new_text: str, **kwargs: Any) -> str:
         try:
             file_path = _resolve_path(path, self._workspace, self._allowed_dir)

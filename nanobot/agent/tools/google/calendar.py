@@ -52,6 +52,10 @@ class GoogleCalendarCreateEventTool(GoogleBaseTool):
             "required": ["summary", "start", "end"],
         }
 
+    @property
+    def requires_confirmation(self) -> bool:
+        return True
+
     async def execute(self, **kwargs: Any) -> str:
         env = self._env()
         if isinstance(env, str):
@@ -237,6 +241,10 @@ class GoogleCalendarUpdateEventTool(GoogleBaseTool):
             "required": ["event_id"],
         }
 
+    @property
+    def requires_confirmation(self) -> bool:
+        return True
+
     async def execute(self, **kwargs: Any) -> str:
         env = self._env()
         if isinstance(env, str):
@@ -281,6 +289,10 @@ class GoogleCalendarDeleteEventTool(GoogleBaseTool):
             },
             "required": ["event_id"],
         }
+
+    @property
+    def requires_confirmation(self) -> bool:
+        return True
 
     async def execute(self, **kwargs: Any) -> str:
         env = self._env()

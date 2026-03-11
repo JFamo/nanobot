@@ -34,6 +34,10 @@ class XCreateListTool(XBaseTool):
             "required": ["name"],
         }
 
+    @property
+    def requires_confirmation(self) -> bool:
+        return True
+
     async def execute(self, **kwargs: Any) -> str:
         env = self._env()
         if isinstance(env, str):
@@ -66,6 +70,10 @@ class XDeleteListTool(XBaseTool):
             },
             "required": ["list_id"],
         }
+
+    @property
+    def requires_confirmation(self) -> bool:
+        return True
 
     async def execute(self, **kwargs: Any) -> str:
         env = self._env()
@@ -165,6 +173,10 @@ class XAddListMemberTool(XBaseTool):
             "required": ["list_id", "user_id"],
         }
 
+    @property
+    def requires_confirmation(self) -> bool:
+        return True
+
     async def execute(self, **kwargs: Any) -> str:
         env = self._env()
         if isinstance(env, str):
@@ -194,6 +206,10 @@ class XRemoveListMemberTool(XBaseTool):
             },
             "required": ["list_id", "user_id"],
         }
+
+    @property
+    def requires_confirmation(self) -> bool:
+        return True
 
     async def execute(self, **kwargs: Any) -> str:
         env = self._env()

@@ -35,6 +35,10 @@ class GoogleSheetsCreateTool(GoogleBaseTool):
             "required": ["title"],
         }
 
+    @property
+    def requires_confirmation(self) -> bool:
+        return True
+
     async def execute(self, **kwargs: Any) -> str:
         env = self._env()
         if isinstance(env, str):
@@ -174,6 +178,10 @@ class GoogleSheetsWriteRangeTool(GoogleBaseTool):
             "required": ["spreadsheet_id", "range_notation", "values"],
         }
 
+    @property
+    def requires_confirmation(self) -> bool:
+        return True
+
     async def execute(self, **kwargs: Any) -> str:
         env = self._env()
         if isinstance(env, str):
@@ -230,6 +238,10 @@ class GoogleSheetsAppendRowsTool(GoogleBaseTool):
             "required": ["spreadsheet_id", "range_notation", "values"],
         }
 
+    @property
+    def requires_confirmation(self) -> bool:
+        return True
+
     async def execute(self, **kwargs: Any) -> str:
         env = self._env()
         if isinstance(env, str):
@@ -273,6 +285,10 @@ class GoogleSheetsClearRangeTool(GoogleBaseTool):
             },
             "required": ["spreadsheet_id", "range_notation"],
         }
+
+    @property
+    def requires_confirmation(self) -> bool:
+        return True
 
     async def execute(self, **kwargs: Any) -> str:
         env = self._env()

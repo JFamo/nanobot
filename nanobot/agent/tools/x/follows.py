@@ -32,6 +32,10 @@ class XFollowUserTool(XBaseTool):
             "required": ["target_user_id"],
         }
 
+    @property
+    def requires_confirmation(self) -> bool:
+        return True
+
     async def execute(self, **kwargs: Any) -> str:
         env = self._env()
         if isinstance(env, str):
@@ -60,6 +64,10 @@ class XUnfollowUserTool(XBaseTool):
             },
             "required": ["target_user_id"],
         }
+
+    @property
+    def requires_confirmation(self) -> bool:
+        return True
 
     async def execute(self, **kwargs: Any) -> str:
         env = self._env()

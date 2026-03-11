@@ -62,7 +62,11 @@ class ExecTool(Tool):
             },
             "required": ["command"]
         }
-    
+
+    @property
+    def requires_confirmation(self) -> bool:
+        return True
+
     async def execute(self, command: str, working_dir: str | None = None, **kwargs: Any) -> str:
         cwd = working_dir or self.working_dir or os.getcwd()
         guard_error = self._guard_command(command, cwd)
