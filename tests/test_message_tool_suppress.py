@@ -1,4 +1,4 @@
-"""Test message tool behaviour: interim sends + final reply both delivered."""
+"""Test message tool suppress logic for final replies."""
 
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock
@@ -19,20 +19,51 @@ def _make_loop(tmp_path: Path) -> AgentLoop:
     return AgentLoop(bus=bus, provider=provider, workspace=tmp_path, model="test-model", memory_window=10)
 
 
-class TestMessageToolMultiSend:
-    """Both interim tool-sent messages and the final reply are delivered."""
+class TestMessageToolSuppressLogic:
+    """Final reply suppressed only when message tool sends to the same target."""
 
     @pytest.mark.asyncio
-    async def test_interim_and_final_both_delivered(self, tmp_path: Path) -> None:
-        """message tool sends interim update; final text reply is also returned."""
+    async def test_suppress_when_sent_to_same_target(self, tmp_path: Path) -> None:
+        """message tool sent to same channel → final text reply suppressed (no duplicate)."""
         loop = _make_loop(tmp_path)
         tool_call = ToolCallRequest(
             id="call1", name="message",
-            arguments={"content": "On it…", "channel": "feishu", "chat_id": "chat123"},
+            arguments={"content": "Hello", "channel": "feishu", "chat_id": "chat123"},
         )
         calls = iter([
             LLMResponse(content="", tool_calls=[tool_call]),
-            LLMResponse(content="Here's your answer.", tool_calls=[]),
+            LLMResponse(content="Done", tool_calls=[]),
+        ])
+        loop.provider.chat = AsyncMock(side_effect=lambda *a, **kw: next(calls))
+        loop.tools.get_definitions = MagicMock(return_value=[])
+
+        sent: list[OutboundMessage] = []
+        mt = loop.tools.get("message")
+        if isinstance(mt, MessageTool):
+            mt.set_send_callback(AsyncMock(side_effect=lambda m: sent.append(m)))
+
+        msg = InboundMessage(channel="feishu", sender_id="user1", chat_id="chat123", content="Send")
+        result = await loop._process_message(msg)
+
+        assert len(sent) == 1
+        assert result is None  # suppressed — message tool already replied
+
+    @pytest.mark.asyncio
+    async def test_multiple_interim_then_final_all_via_tool(self, tmp_path: Path) -> None:
+        """Multiple message tool calls (interim + final) all delivered; text reply suppressed."""
+        loop = _make_loop(tmp_path)
+        interim = ToolCallRequest(
+            id="call1", name="message",
+            arguments={"content": "On it…", "channel": "feishu", "chat_id": "chat123"},
+        )
+        final = ToolCallRequest(
+            id="call2", name="message",
+            arguments={"content": "Here's your answer.", "channel": "feishu", "chat_id": "chat123"},
+        )
+        calls = iter([
+            LLMResponse(content="", tool_calls=[interim]),
+            LLMResponse(content="", tool_calls=[final]),
+            LLMResponse(content="", tool_calls=[]),  # empty text reply — suppressed
         ])
         loop.provider.chat = AsyncMock(side_effect=lambda *a, **kw: next(calls))
         loop.tools.get_definitions = MagicMock(return_value=[])
@@ -45,16 +76,14 @@ class TestMessageToolMultiSend:
         msg = InboundMessage(channel="feishu", sender_id="user1", chat_id="chat123", content="Do the thing")
         result = await loop._process_message(msg)
 
-        # Interim message was sent via tool
-        assert len(sent) == 1
+        assert len(sent) == 2
         assert sent[0].content == "On it…"
-        # Final text reply is also returned (not suppressed)
-        assert result is not None
-        assert result.content == "Here's your answer."
+        assert sent[1].content == "Here's your answer."
+        assert result is None  # suppressed
 
     @pytest.mark.asyncio
-    async def test_cross_channel_and_final_both_delivered(self, tmp_path: Path) -> None:
-        """message tool targets a different channel; final reply still returned."""
+    async def test_not_suppress_when_sent_to_different_target(self, tmp_path: Path) -> None:
+        """message tool targets a different channel → confirmation reply on original channel still sent."""
         loop = _make_loop(tmp_path)
         tool_call = ToolCallRequest(
             id="call1", name="message",
@@ -77,12 +106,11 @@ class TestMessageToolMultiSend:
 
         assert len(sent) == 1
         assert sent[0].channel == "email"
-        assert result is not None
+        assert result is not None  # not suppressed — different target
         assert result.channel == "feishu"
-        assert result.content == "I've sent the email."
 
     @pytest.mark.asyncio
-    async def test_no_message_tool_used(self, tmp_path: Path) -> None:
+    async def test_not_suppress_when_no_message_tool_used(self, tmp_path: Path) -> None:
         """Without message tool calls, final reply is returned as normal."""
         loop = _make_loop(tmp_path)
         loop.provider.chat = AsyncMock(return_value=LLMResponse(content="Hello!", tool_calls=[]))
@@ -93,3 +121,19 @@ class TestMessageToolMultiSend:
 
         assert result is not None
         assert "Hello" in result.content
+
+
+class TestMessageToolTurnTracking:
+
+    def test_sent_in_turn_tracks_same_target(self) -> None:
+        tool = MessageTool()
+        tool.set_context("feishu", "chat1")
+        assert not tool._sent_in_turn
+        tool._sent_in_turn = True
+        assert tool._sent_in_turn
+
+    def test_start_turn_resets(self) -> None:
+        tool = MessageTool()
+        tool._sent_in_turn = True
+        tool.start_turn()
+        assert not tool._sent_in_turn
