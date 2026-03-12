@@ -35,6 +35,10 @@ class GoogleDocsCreateTool(GoogleBaseTool):
             "required": ["title"],
         }
 
+    @property
+    def requires_confirmation(self) -> bool:
+        return True
+
     async def execute(self, **kwargs: Any) -> str:
         env = self._env()
         if isinstance(env, str):
@@ -117,6 +121,10 @@ class GoogleDocsAppendTool(GoogleBaseTool):
             "required": ["document_id", "text"],
         }
 
+    @property
+    def requires_confirmation(self) -> bool:
+        return True
+
     async def execute(self, **kwargs: Any) -> str:
         env = self._env()
         if isinstance(env, str):
@@ -168,6 +176,10 @@ class GoogleDocsInsertTool(GoogleBaseTool):
             },
             "required": ["document_id", "text", "index"],
         }
+
+    @property
+    def requires_confirmation(self) -> bool:
+        return True
 
     async def execute(self, **kwargs: Any) -> str:
         env = self._env()

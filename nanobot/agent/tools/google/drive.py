@@ -40,6 +40,10 @@ class GoogleDriveUploadTool(GoogleBaseTool):
             "required": ["file_name", "mime_type", "file_path"],
         }
 
+    @property
+    def requires_confirmation(self) -> bool:
+        return True
+
     async def execute(self, **kwargs: Any) -> str:
         env = self._env()
         if isinstance(env, str):
@@ -222,6 +226,10 @@ class GoogleDriveCreateFolderTool(GoogleBaseTool):
             "required": ["folder_name"],
         }
 
+    @property
+    def requires_confirmation(self) -> bool:
+        return True
+
     async def execute(self, **kwargs: Any) -> str:
         env = self._env()
         if isinstance(env, str):
@@ -258,6 +266,10 @@ class GoogleDriveDeleteTool(GoogleBaseTool):
             },
             "required": ["file_id"],
         }
+
+    @property
+    def requires_confirmation(self) -> bool:
+        return True
 
     async def execute(self, **kwargs: Any) -> str:
         env = self._env()
@@ -303,6 +315,10 @@ class GoogleDriveShareTool(GoogleBaseTool):
             },
             "required": ["file_id", "email"],
         }
+
+    @property
+    def requires_confirmation(self) -> bool:
+        return True
 
     async def execute(self, **kwargs: Any) -> str:
         env = self._env()

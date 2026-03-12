@@ -34,6 +34,10 @@ class XPostTweetTool(XBaseTool):
             "required": ["text"],
         }
 
+    @property
+    def requires_confirmation(self) -> bool:
+        return True
+
     async def execute(self, **kwargs: Any) -> str:
         env = self._env()
         if isinstance(env, str):
@@ -69,6 +73,10 @@ class XDeleteTweetTool(XBaseTool):
             },
             "required": ["tweet_id"],
         }
+
+    @property
+    def requires_confirmation(self) -> bool:
+        return True
 
     async def execute(self, **kwargs: Any) -> str:
         env = self._env()

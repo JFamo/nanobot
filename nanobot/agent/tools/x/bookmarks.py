@@ -73,6 +73,10 @@ class XBookmarkTweetTool(XBaseTool):
             "required": ["tweet_id"],
         }
 
+    @property
+    def requires_confirmation(self) -> bool:
+        return True
+
     async def execute(self, **kwargs: Any) -> str:
         env = self._env()
         if isinstance(env, str):
@@ -101,6 +105,10 @@ class XRemoveBookmarkTool(XBaseTool):
             },
             "required": ["tweet_id"],
         }
+
+    @property
+    def requires_confirmation(self) -> bool:
+        return True
 
     async def execute(self, **kwargs: Any) -> str:
         env = self._env()

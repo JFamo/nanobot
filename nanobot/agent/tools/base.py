@@ -39,6 +39,11 @@ class Tool(ABC):
         """JSON Schema for tool parameters."""
         pass
     
+    @property
+    def requires_confirmation(self) -> bool:
+        """Whether this tool requires user confirmation before execution."""
+        return False
+
     @abstractmethod
     async def execute(self, **kwargs: Any) -> str:
         """

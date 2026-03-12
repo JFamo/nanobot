@@ -323,7 +323,7 @@ def gateway(
             f"[SCHEDULED REMINDER] A reminder you scheduled is now due. "
             f"Deliver this message to the user in your own voice: {job.payload.message}"
         )
-        response = await agent.process_direct(
+        result = await agent.process_direct(
             prompt,
             session_key=session_key,
             channel=channel,
@@ -334,9 +334,9 @@ def gateway(
             await bus.publish_outbound(OutboundMessage(
                 channel=job.payload.channel or "cli",
                 chat_id=job.payload.to,
-                content=response or ""
+                content=result.content or ""
             ))
-        return response
+        return result.content
     cron.on_job = on_cron_job
     
     # Create channel manager
@@ -366,13 +366,14 @@ def gateway(
         async def _silent(*_args, **_kwargs):
             pass
 
-        return await agent.process_direct(
+        result = await agent.process_direct(
             tasks,
             session_key="heartbeat",
             channel=channel,
             chat_id=chat_id,
             on_progress=_silent,
         )
+        return result.content
 
     async def on_heartbeat_notify(response: str) -> None:
         """Deliver a heartbeat response to the user's channel."""
@@ -420,16 +421,48 @@ def gateway(
 
             async def handle_agent_run(request):
                 body = await request.json()
-                response = await agent.process_direct(
+                result = await agent.process_direct(
                     body["message"],
                     session_key=body.get("session_key", "http:direct"),
                     channel=body.get("channel", "http"),
                     chat_id=body.get("chat_id", "direct"),
+                    confirmation_supported=body.get("confirmation_supported", False),
                 )
-                return web.json_response({"response": response})
+                return web.json_response({
+                    "response": result.content,
+                    "pending_actions": [
+                        {
+                            "action_id": pa.action_id,
+                            "tool_call_id": pa.tool_call_id,
+                            "tool_name": pa.tool_name,
+                            "arguments": pa.arguments,
+                        }
+                        for pa in result.pending_actions
+                    ],
+                })
+
+            async def handle_execute_tool(request):
+                body = await request.json()
+                tool_name = body.get("tool_name")
+                arguments = body.get("arguments", {})
+                tool = agent.tools.get(tool_name)
+                if not tool:
+                    return web.json_response(
+                        {"success": False, "error": f"Tool '{tool_name}' not found"},
+                        status=404,
+                    )
+                try:
+                    result = await tool.execute(**arguments)
+                    return web.json_response({"success": True, "result": result})
+                except Exception as e:
+                    return web.json_response(
+                        {"success": False, "error": str(e)},
+                        status=500,
+                    )
 
             web_app = web.Application(middlewares=[auth_middleware])
             web_app.router.add_post("/agent/run", handle_agent_run)
+            web_app.router.add_post("/agent/execute-tool", handle_execute_tool)
             runner = web.AppRunner(web_app)
             await runner.setup()
             await web.TCPSite(runner, "0.0.0.0", port).start()
@@ -534,8 +567,8 @@ def agent(
         # Single message mode — direct call, no bus needed
         async def run_once():
             with _thinking_ctx():
-                response = await agent_loop.process_direct(message, session_id, on_progress=_cli_progress)
-            _print_agent_response(response, render_markdown=markdown)
+                result = await agent_loop.process_direct(message, session_id, on_progress=_cli_progress)
+            _print_agent_response(result.content, render_markdown=markdown)
             await agent_loop.close_mcp()
 
         asyncio.run(run_once())
@@ -1011,14 +1044,14 @@ def cron_run(
     result_holder = []
 
     async def on_job(job: CronJob) -> str | None:
-        response = await agent_loop.process_direct(
+        result = await agent_loop.process_direct(
             job.payload.message,
             session_key=f"cron:{job.id}",
             channel=job.payload.channel or "cli",
             chat_id=job.payload.to or "direct",
         )
-        result_holder.append(response)
-        return response
+        result_holder.append(result.content)
+        return result.content
 
     service.on_job = on_job
 

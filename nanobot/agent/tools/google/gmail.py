@@ -34,6 +34,10 @@ class GmailSendTool(GoogleBaseTool):
             "required": ["to", "subject", "body"],
         }
 
+    @property
+    def requires_confirmation(self) -> bool:
+        return True
+
     async def execute(self, **kwargs: Any) -> str:
         env = self._env()
         if isinstance(env, str):
@@ -235,6 +239,10 @@ class GmailReplyTool(GoogleBaseTool):
             "required": ["thread_id", "message_id", "to", "subject", "body"],
         }
 
+    @property
+    def requires_confirmation(self) -> bool:
+        return True
+
     async def execute(self, **kwargs: Any) -> str:
         env = self._env()
         if isinstance(env, str):
@@ -277,6 +285,10 @@ class GmailTrashTool(GoogleBaseTool):
             "required": ["message_id"],
         }
 
+    @property
+    def requires_confirmation(self) -> bool:
+        return True
+
     async def execute(self, **kwargs: Any) -> str:
         env = self._env()
         if isinstance(env, str):
@@ -314,6 +326,10 @@ class GmailCreateDraftTool(GoogleBaseTool):
             },
             "required": ["to", "subject", "body"],
         }
+
+    @property
+    def requires_confirmation(self) -> bool:
+        return True
 
     async def execute(self, **kwargs: Any) -> str:
         env = self._env()

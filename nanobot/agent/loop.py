@@ -6,6 +6,7 @@ import asyncio
 import json
 import os
 import re
+import uuid
 import weakref
 from contextlib import AsyncExitStack
 from pathlib import Path
@@ -16,6 +17,7 @@ from loguru import logger
 from nanobot.agent.context import ContextBuilder
 from nanobot.agent.memory import MemoryStore
 from nanobot.agent.subagent import SubagentManager
+from nanobot.agent.types import AgentResponse, PendingAction
 from nanobot.agent.tools.cron import CronTool
 from nanobot.agent.tools.filesystem import EditFileTool, ListDirTool, ReadFileTool, WriteFileTool
 from nanobot.agent.tools.google import (
@@ -171,6 +173,8 @@ class AgentLoop:
         )
 
         self._running = False
+        self._confirmation_supported = False
+        self._pending_actions: list[PendingAction] = []
         self._mcp_servers = mcp_servers or {}
         self._mcp_stack: AsyncExitStack | None = None
         self._mcp_connected = False
@@ -391,12 +395,27 @@ class AgentLoop:
                     tools_used.append(tool_call.name)
                     args_str = json.dumps(tool_call.arguments, ensure_ascii=False)
                     logger.info("Tool call: {}({})", tool_call.name, args_str[:200])
-                    result = await self.tools.execute(tool_call.name, tool_call.arguments)
-                    
-                    # Log tool result (truncated for space)
+
+                    tool = self.tools.get(tool_call.name)
+                    if self._confirmation_supported and tool and tool.requires_confirmation:
+                        self._pending_actions.append(PendingAction(
+                            action_id=str(uuid.uuid4()),
+                            tool_call_id=tool_call.id,
+                            tool_name=tool_call.name,
+                            arguments=tool_call.arguments,
+                        ))
+                        result = (
+                            "IMPORTANT: This action was NOT executed. It requires user confirmation before it will be carried out. "
+                            "Do NOT tell the user this action was completed or produce output implying it was performed. "
+                            "Inform the user that this action is pending their approval."
+                        )
+                        logger.info("Tool {} requires confirmation, queued as pending action", tool_call.name)
+                    else:
+                        result = await self.tools.execute(tool_call.name, tool_call.arguments)
+
                     result_preview = result[:200] + "..." if len(result) > 200 else result
                     logger.debug("Tool result for {}: {}", tool_call.name, result_preview)
-                    
+
                     messages = self.context.add_tool_result(
                         messages, tool_call.id, tool_call.name, result
                     )
@@ -666,9 +685,15 @@ class AgentLoop:
         channel: str = "cli",
         chat_id: str = "direct",
         on_progress: Callable[[str], Awaitable[None]] | None = None,
-    ) -> str:
-        """Process a message directly (for CLI or cron usage)."""
+        confirmation_supported: bool = False,
+    ) -> AgentResponse:
+        """Process a message directly (for CLI, HTTP gateway, or cron usage)."""
+        self._confirmation_supported = confirmation_supported
+        self._pending_actions = []
         await self._connect_mcp()
         msg = InboundMessage(channel=channel, sender_id="user", chat_id=chat_id, content=content)
         response = await self._process_message(msg, session_key=session_key, on_progress=on_progress)
-        return response.content if response else ""
+        return AgentResponse(
+            content=response.content if response else "",
+            pending_actions=list(self._pending_actions),
+        )

@@ -136,6 +136,10 @@ class GoogleContactsCreateTool(GoogleBaseTool):
             "required": ["given_name"],
         }
 
+    @property
+    def requires_confirmation(self) -> bool:
+        return True
+
     async def execute(self, **kwargs: Any) -> str:
         env = self._env()
         if isinstance(env, str):
@@ -184,6 +188,10 @@ class GoogleContactsUpdateTool(GoogleBaseTool):
             "required": ["resource_name"],
         }
 
+    @property
+    def requires_confirmation(self) -> bool:
+        return True
+
     async def execute(self, **kwargs: Any) -> str:
         env = self._env()
         if isinstance(env, str):
@@ -221,6 +229,10 @@ class GoogleContactsDeleteTool(GoogleBaseTool):
             },
             "required": ["resource_name"],
         }
+
+    @property
+    def requires_confirmation(self) -> bool:
+        return True
 
     async def execute(self, **kwargs: Any) -> str:
         env = self._env()
