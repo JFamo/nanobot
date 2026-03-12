@@ -20,7 +20,6 @@ class MessageTool(Tool):
         self._default_channel = default_channel
         self._default_chat_id = default_chat_id
         self._default_message_id = default_message_id
-        self._sent_in_turn: bool = False
 
     def set_context(self, channel: str, chat_id: str, message_id: str | None = None) -> None:
         """Set the current message context."""
@@ -32,17 +31,18 @@ class MessageTool(Tool):
         """Set the callback for sending messages."""
         self._send_callback = callback
 
-    def start_turn(self) -> None:
-        """Reset per-turn send tracking."""
-        self._sent_in_turn = False
-
     @property
     def name(self) -> str:
         return "message"
 
     @property
     def description(self) -> str:
-        return "Send a message to the user. Use this when you want to communicate something."
+        return (
+            "Send a message to the user. Use this to send interim updates mid-task "
+            "(e.g. 'Looking that up…', 'This may take a moment…') so the user stays informed "
+            "while you work. Can also target a specific channel or chat_id. "
+            "Your final text reply is sent automatically — no need to use this for the final answer."
+        )
 
     @property
     def parameters(self) -> dict[str, Any]:
@@ -101,8 +101,6 @@ class MessageTool(Tool):
 
         try:
             await self._send_callback(msg)
-            if channel == self._default_channel and chat_id == self._default_chat_id:
-                self._sent_in_turn = True
             media_info = f" with {len(media)} attachments" if media else ""
             return f"Message sent to {channel}:{chat_id}{media_info}"
         except Exception as e:

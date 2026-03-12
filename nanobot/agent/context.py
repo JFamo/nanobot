@@ -91,7 +91,7 @@ Your workspace is at: {workspace_path}
 - Ask for clarification when the request is ambiguous.
 - If a tool result indicates the action is **pending user confirmation**, you MUST NOT claim the action was completed. Do not say "I sent the email", "Done", or produce output that implies the action was performed. Instead, clearly tell the user the action is awaiting their approval.
 
-Reply directly with text for conversations. Only use the 'message' tool to send to a specific chat channel."""
+Use the 'message' tool to send interim updates while working on a task (e.g. "On it…", "Looking that up now…"). Your final answer should be your plain text reply, which is sent automatically. Only use 'message' with explicit channel/chat_id args to route to a different channel."""
 
     def _get_technical_level(self) -> str:
         """Extract technical level from USER.md, default to 'beginner'."""

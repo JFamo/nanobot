@@ -1,4 +1,4 @@
-"""Test message tool suppress logic for final replies."""
+"""Test message tool behaviour: interim sends + final reply both delivered."""
 
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock
@@ -19,19 +19,20 @@ def _make_loop(tmp_path: Path) -> AgentLoop:
     return AgentLoop(bus=bus, provider=provider, workspace=tmp_path, model="test-model", memory_window=10)
 
 
-class TestMessageToolSuppressLogic:
-    """Final reply suppressed only when message tool sends to the same target."""
+class TestMessageToolMultiSend:
+    """Both interim tool-sent messages and the final reply are delivered."""
 
     @pytest.mark.asyncio
-    async def test_suppress_when_sent_to_same_target(self, tmp_path: Path) -> None:
+    async def test_interim_and_final_both_delivered(self, tmp_path: Path) -> None:
+        """message tool sends interim update; final text reply is also returned."""
         loop = _make_loop(tmp_path)
         tool_call = ToolCallRequest(
             id="call1", name="message",
-            arguments={"content": "Hello", "channel": "feishu", "chat_id": "chat123"},
+            arguments={"content": "On it…", "channel": "feishu", "chat_id": "chat123"},
         )
         calls = iter([
             LLMResponse(content="", tool_calls=[tool_call]),
-            LLMResponse(content="Done", tool_calls=[]),
+            LLMResponse(content="Here's your answer.", tool_calls=[]),
         ])
         loop.provider.chat = AsyncMock(side_effect=lambda *a, **kw: next(calls))
         loop.tools.get_definitions = MagicMock(return_value=[])
@@ -41,14 +42,19 @@ class TestMessageToolSuppressLogic:
         if isinstance(mt, MessageTool):
             mt.set_send_callback(AsyncMock(side_effect=lambda m: sent.append(m)))
 
-        msg = InboundMessage(channel="feishu", sender_id="user1", chat_id="chat123", content="Send")
+        msg = InboundMessage(channel="feishu", sender_id="user1", chat_id="chat123", content="Do the thing")
         result = await loop._process_message(msg)
 
+        # Interim message was sent via tool
         assert len(sent) == 1
-        assert result is None  # suppressed
+        assert sent[0].content == "On it…"
+        # Final text reply is also returned (not suppressed)
+        assert result is not None
+        assert result.content == "Here's your answer."
 
     @pytest.mark.asyncio
-    async def test_not_suppress_when_sent_to_different_target(self, tmp_path: Path) -> None:
+    async def test_cross_channel_and_final_both_delivered(self, tmp_path: Path) -> None:
+        """message tool targets a different channel; final reply still returned."""
         loop = _make_loop(tmp_path)
         tool_call = ToolCallRequest(
             id="call1", name="message",
@@ -71,11 +77,13 @@ class TestMessageToolSuppressLogic:
 
         assert len(sent) == 1
         assert sent[0].channel == "email"
-        assert result is not None  # not suppressed
+        assert result is not None
         assert result.channel == "feishu"
+        assert result.content == "I've sent the email."
 
     @pytest.mark.asyncio
-    async def test_not_suppress_when_no_message_tool_used(self, tmp_path: Path) -> None:
+    async def test_no_message_tool_used(self, tmp_path: Path) -> None:
+        """Without message tool calls, final reply is returned as normal."""
         loop = _make_loop(tmp_path)
         loop.provider.chat = AsyncMock(return_value=LLMResponse(content="Hello!", tool_calls=[]))
         loop.tools.get_definitions = MagicMock(return_value=[])
@@ -85,19 +93,3 @@ class TestMessageToolSuppressLogic:
 
         assert result is not None
         assert "Hello" in result.content
-
-
-class TestMessageToolTurnTracking:
-
-    def test_sent_in_turn_tracks_same_target(self) -> None:
-        tool = MessageTool()
-        tool.set_context("feishu", "chat1")
-        assert not tool._sent_in_turn
-        tool._sent_in_turn = True
-        assert tool._sent_in_turn
-
-    def test_start_turn_resets(self) -> None:
-        tool = MessageTool()
-        tool._sent_in_turn = True
-        tool.start_turn()
-        assert not tool._sent_in_turn

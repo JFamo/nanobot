@@ -607,9 +607,6 @@ class AgentLoop:
             self._consolidation_tasks.add(_task)
 
         self._set_tool_context(msg.channel, msg.chat_id, msg.metadata.get("message_id"))
-        if message_tool := self.tools.get("message"):
-            if isinstance(message_tool, MessageTool):
-                message_tool.start_turn()
 
         history = session.get_history(max_messages=self.memory_window)
         initial_messages = self.context.build_messages(
@@ -636,9 +633,6 @@ class AgentLoop:
 
         self._save_turn(session, all_msgs, 1 + len(history))
         self.sessions.save(session)
-
-        if (mt := self.tools.get("message")) and isinstance(mt, MessageTool) and mt._sent_in_turn:
-            return None
 
         preview = final_content[:120] + "..." if len(final_content) > 120 else final_content
         logger.info("Response to {}:{}: {}", msg.channel, msg.sender_id, preview)
