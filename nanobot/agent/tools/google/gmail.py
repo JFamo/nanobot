@@ -15,11 +15,9 @@ class GmailSendTool(GoogleBaseTool):
     def description(self) -> str:
         return (
             "Send an email via Gmail. "
-            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id.\n\n"
-            "DISPLAY FORMAT: Include this directive when confirming the sent email:\n"
-            '::gmail{subject="<email_subject>" to="<recipient_email>" url="https://mail.google.com/mail/u/0/#sent/<message_id>" size="default"}\n'
-            "Replace placeholders with actual values. Use the message_id from the response for the url.\n"
-            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.'
+            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id. "
+            "This action requires user confirmation. The UI automatically shows a preview card with to, subject, and body — "
+            "do not repeat those parameters or include display directives in your response; a brief intro line (e.g. \"Here's the email:\") is sufficient."
         )
 
     @property
@@ -203,11 +201,9 @@ class GmailReplyTool(GoogleBaseTool):
     def description(self) -> str:
         return (
             "Reply to an existing Gmail thread. "
-            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id.\n\n"
-            "DISPLAY FORMAT: Include this directive when confirming the reply:\n"
-            '::gmail{subject="<email_subject>" to="<recipient_email>" url="https://mail.google.com/mail/u/0/#inbox/<thread_id>" size="default"}\n'
-            "Replace placeholders with actual values. Use the thread_id for the url.\n"
-            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.'
+            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id. "
+            "This action requires user confirmation. The UI automatically shows a preview card with thread, to, subject, and body — "
+            "do not repeat those parameters or include display directives in your response; a brief intro line is sufficient."
         )
 
     @property
@@ -269,7 +265,8 @@ class GmailTrashTool(GoogleBaseTool):
     def description(self) -> str:
         return (
             "Move a Gmail message to the trash. "
-            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id."
+            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id. "
+            "This action requires user confirmation. The UI shows a preview — do not repeat the action details in your response."
         )
 
     @property
@@ -308,11 +305,9 @@ class GmailCreateDraftTool(GoogleBaseTool):
     def description(self) -> str:
         return (
             "Create a Gmail draft email without sending it. "
-            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id.\n\n"
-            "DISPLAY FORMAT: Include this directive when presenting the draft:\n"
-            '::gmail{subject="<email_subject>" to="<recipient_email>" url="https://mail.google.com/mail/u/0/#drafts/<draft_id>" size="default"}\n'
-            "Replace placeholders with actual values. Use the draft or message ID for the url.\n"
-            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.'
+            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id. "
+            "This action requires user confirmation. The UI automatically shows a preview card with to, subject, and body — "
+            "do not repeat those parameters or include display directives in your response; a brief intro line is sufficient."
         )
 
     @property

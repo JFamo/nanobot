@@ -303,7 +303,11 @@ class AgentLoop:
                         result = (
                             "IMPORTANT: This action was NOT executed. It requires user confirmation before it will be carried out. "
                             "Do NOT tell the user this action was completed or produce output implying it was performed. "
-                            "Inform the user that this action is pending their approval."
+                            "A rich preview card showing all the action's details (recipients, subject, body, event info, etc.) "
+                            "is automatically rendered in the UI below your message. "
+                            "Do NOT repeat or summarize the action's parameters in your text — the preview card already displays them. "
+                            "Keep your response to a brief, natural introduction (e.g. \"Here's the email:\", \"I've prepared the event:\") "
+                            "and nothing more. The user can review all details in the preview card."
                         )
                         logger.info("Tool {} requires confirmation, queued as pending action", tool_call.name)
                     else:

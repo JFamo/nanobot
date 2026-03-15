@@ -56,11 +56,8 @@ class XBookmarkTweetTool(XBaseTool):
     @property
     def description(self) -> str:
         return (
-            "Bookmark a tweet on X. Authentication is automatic.\n\n"
-            "DISPLAY FORMAT: Include this directive when confirming the bookmark:\n"
-            '::x-tweet{text="<tweet_text>" author="@<author_username>" url="https://x.com/<author_username>/status/<tweet_id>" size="inline"}\n'
-            "Replace placeholders with actual values. If tweet text is not available from the response, omit the text attribute.\n"
-            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.'
+            "Bookmark a tweet on X. Authentication is automatic. "
+            "This action requires user confirmation. The UI shows a preview — do not repeat the action details in your response."
         )
 
     @property
@@ -94,7 +91,10 @@ class XRemoveBookmarkTool(XBaseTool):
 
     @property
     def description(self) -> str:
-        return "Remove a bookmarked tweet on X. Authentication is automatic."
+        return (
+            "Remove a bookmarked tweet on X. Authentication is automatic. "
+            "This action requires user confirmation. The UI shows a preview — do not repeat the action details in your response."
+        )
 
     @property
     def parameters(self) -> dict[str, Any]:

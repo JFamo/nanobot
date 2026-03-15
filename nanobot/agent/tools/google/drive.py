@@ -17,11 +17,9 @@ class GoogleDriveUploadTool(GoogleBaseTool):
     def description(self) -> str:
         return (
             "Upload a file to Google Drive. "
-            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id.\n\n"
-            "DISPLAY FORMAT: Include this directive when presenting the uploaded file:\n"
-            '::google-drive{name="<file_name>" url="https://drive.google.com/file/d/<file_id>/view" type="file" size="default"}\n'
-            "Replace placeholders with actual values from the response.\n"
-            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.'
+            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id. "
+            "This action requires user confirmation. The UI automatically shows a preview card with file name and path — "
+            "do not repeat those parameters or include display directives in your response; a brief intro line is sufficient."
         )
 
     @property
@@ -202,11 +200,9 @@ class GoogleDriveCreateFolderTool(GoogleBaseTool):
     def description(self) -> str:
         return (
             "Create a folder in Google Drive. "
-            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id.\n\n"
-            "DISPLAY FORMAT: Include this directive when presenting the created folder:\n"
-            '::google-drive{name="<folder_name>" url="https://drive.google.com/drive/folders/<folder_id>" type="folder" size="default"}\n'
-            "Replace placeholders with actual values from the response.\n"
-            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.'
+            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id. "
+            "This action requires user confirmation. The UI automatically shows a preview card with folder name — "
+            "do not repeat those parameters or include display directives in your response; a brief intro line is sufficient."
         )
 
     @property
@@ -251,7 +247,8 @@ class GoogleDriveDeleteTool(GoogleBaseTool):
     def description(self) -> str:
         return (
             "Move a Google Drive file to trash. "
-            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id."
+            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id. "
+            "This action requires user confirmation. The UI shows a preview — do not repeat the action details in your response."
         )
 
     @property
@@ -290,7 +287,8 @@ class GoogleDriveShareTool(GoogleBaseTool):
     def description(self) -> str:
         return (
             "Share a Google Drive file with a specific email address. "
-            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id."
+            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id. "
+            "This action requires user confirmation. The UI shows a preview — do not repeat the action details in your response."
         )
 
     @property

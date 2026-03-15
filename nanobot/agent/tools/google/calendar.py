@@ -15,11 +15,9 @@ class GoogleCalendarCreateEventTool(GoogleBaseTool):
     def description(self) -> str:
         return (
             "Create a Google Calendar event. "
-            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id.\n\n"
-            "DISPLAY FORMAT: Always include this directive in your response so the UI renders a preview card:\n"
-            '::google-calendar-event{title="<event_title>" date="<start_time_iso>" url="<htmlLink>" size="default"}\n'
-            "Replace placeholders with actual values. Use the htmlLink from the response for the url.\n"
-            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.'
+            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id. "
+            "This action requires user confirmation. The UI automatically shows a preview card with summary, start, end, and other details — "
+            "do not repeat those parameters or include display directives in your response; a brief intro line (e.g. \"I've prepared the event:\") is sufficient."
         )
 
     @property
@@ -200,11 +198,9 @@ class GoogleCalendarUpdateEventTool(GoogleBaseTool):
     def description(self) -> str:
         return (
             "Update an existing Google Calendar event. Only provided fields are changed. "
-            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id.\n\n"
-            "DISPLAY FORMAT: Include this directive when confirming the update:\n"
-            '::google-calendar-event{title="<event_title>" date="<start_time_iso>" url="<htmlLink>" size="default"}\n'
-            "Replace placeholders with actual values. Use the htmlLink from the response for the url.\n"
-            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.'
+            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id. "
+            "This action requires user confirmation. The UI automatically shows a preview card with the updated details — "
+            "do not repeat those parameters or include display directives in your response; a brief intro line is sufficient."
         )
 
     @property
@@ -269,7 +265,8 @@ class GoogleCalendarDeleteEventTool(GoogleBaseTool):
     def description(self) -> str:
         return (
             "Delete a Google Calendar event. "
-            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id."
+            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id. "
+            "This action requires user confirmation. The UI shows a preview — do not repeat the action details in your response."
         )
 
     @property

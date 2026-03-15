@@ -96,11 +96,9 @@ class GoogleContactsCreateTool(GoogleBaseTool):
     def description(self) -> str:
         return (
             "Create a new Google Contact. "
-            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id.\n\n"
-            "DISPLAY FORMAT: Include this directive when presenting the created contact:\n"
-            '::google-contact{name="<full_name>" email="<email>" phone="<phone>" size="default"}\n'
-            "Replace placeholders with actual values. Omit email or phone if not provided.\n"
-            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.'
+            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id. "
+            "This action requires user confirmation. The UI automatically shows a preview card with name, email, phone, etc. — "
+            "do not repeat those parameters or include display directives in your response; a brief intro line is sufficient."
         )
 
     @property
@@ -162,11 +160,9 @@ class GoogleContactsUpdateTool(GoogleBaseTool):
     def description(self) -> str:
         return (
             "Update an existing Google Contact. Only provided fields are changed. "
-            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id.\n\n"
-            "DISPLAY FORMAT: Include this directive when confirming the update:\n"
-            '::google-contact{name="<full_name>" email="<email>" phone="<phone>" size="default"}\n'
-            "Replace placeholders with actual values. Omit email or phone if not available.\n"
-            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.'
+            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id. "
+            "This action requires user confirmation. The UI automatically shows a preview card with the updated contact details — "
+            "do not repeat those parameters or include display directives in your response; a brief intro line is sufficient."
         )
 
     @property
@@ -214,7 +210,8 @@ class GoogleContactsDeleteTool(GoogleBaseTool):
     def description(self) -> str:
         return (
             "Delete a Google Contact by resource name. "
-            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id."
+            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id. "
+            "This action requires user confirmation. The UI shows a preview — do not repeat the action details in your response."
         )
 
     @property

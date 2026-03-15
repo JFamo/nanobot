@@ -15,11 +15,9 @@ class GoogleSheetsCreateTool(GoogleBaseTool):
     def description(self) -> str:
         return (
             "Create a new Google Spreadsheet with a given title. Returns the spreadsheet ID and URL. "
-            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id.\n\n"
-            "DISPLAY FORMAT: Always include this directive in your response so the UI renders a preview card:\n"
-            '::google-sheet{url="<spreadsheet_url>" title="<spreadsheet_title>" size="default"}\n'
-            "Replace placeholders with actual values from the response.\n"
-            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.'
+            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id. "
+            "This action requires user confirmation. The UI automatically shows a preview card with the title — "
+            "do not repeat the parameters or include display directives in your response; a brief intro line is sufficient."
         )
 
     @property
@@ -146,11 +144,9 @@ class GoogleSheetsWriteRangeTool(GoogleBaseTool):
         return (
             "Write data to a range in a Google Spreadsheet. "
             "Provide values as a 2D array (rows of columns). "
-            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id.\n\n"
-            "DISPLAY FORMAT: Include this directive when confirming the update:\n"
-            '::google-sheet{url="https://docs.google.com/spreadsheets/d/<spreadsheet_id>/edit" title="<spreadsheet_title>" size="default"}\n'
-            "Replace placeholders with actual values.\n"
-            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.'
+            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id. "
+            "This action requires user confirmation. The UI automatically shows a preview card with spreadsheet, range, and values — "
+            "do not repeat those parameters or include display directives in your response; a brief intro line is sufficient."
         )
 
     @property
@@ -206,11 +202,9 @@ class GoogleSheetsAppendRowsTool(GoogleBaseTool):
     def description(self) -> str:
         return (
             "Append rows to a Google Spreadsheet after the last row with data. "
-            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id.\n\n"
-            "DISPLAY FORMAT: Include this directive when confirming the update:\n"
-            '::google-sheet{url="https://docs.google.com/spreadsheets/d/<spreadsheet_id>/edit" title="<spreadsheet_title>" size="default"}\n'
-            "Replace placeholders with actual values.\n"
-            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.'
+            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id. "
+            "This action requires user confirmation. The UI automatically shows a preview card with spreadsheet, range, and values — "
+            "do not repeat those parameters or include display directives in your response; a brief intro line is sufficient."
         )
 
     @property
@@ -266,7 +260,8 @@ class GoogleSheetsClearRangeTool(GoogleBaseTool):
     def description(self) -> str:
         return (
             "Clear all values in a range of a Google Spreadsheet (does not delete the cells). "
-            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id."
+            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id. "
+            "This action requires user confirmation. The UI shows a preview — do not repeat the action details in your response."
         )
 
     @property

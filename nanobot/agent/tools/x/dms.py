@@ -15,11 +15,9 @@ class XSendDmTool(XBaseTool):
     def description(self) -> str:
         return (
             "Send a direct message to a user on X. "
-            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id.\n\n"
-            "DISPLAY FORMAT: Include this directive when confirming the sent message:\n"
-            '::x-dm{text="<message_text>" participant="@<recipient_username>" size="default"}\n'
-            "Replace placeholders with actual values. Use the recipient's username if available.\n"
-            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.'
+            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id. "
+            "This action requires user confirmation. The UI automatically shows a preview card with recipient and message text — "
+            "do not repeat those parameters or include display directives in your response; a brief intro line is sufficient."
         )
 
     @property

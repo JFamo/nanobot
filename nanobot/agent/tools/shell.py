@@ -44,7 +44,11 @@ class ExecTool(Tool):
     
     @property
     def description(self) -> str:
-        return "Execute a shell command and return its output. Use with caution."
+        return (
+            "Execute a shell command and return its output. Use with caution. "
+            "This action requires user confirmation. The UI shows a preview with the command — "
+            "do not repeat the command or its output in your response; a brief intro line is sufficient."
+        )
     
     @property
     def parameters(self) -> dict[str, Any]:

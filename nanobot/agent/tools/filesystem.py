@@ -78,7 +78,11 @@ class WriteFileTool(Tool):
     
     @property
     def description(self) -> str:
-        return "Write content to a file at the given path. Creates parent directories if needed."
+        return (
+            "Write content to a file at the given path. Creates parent directories if needed. "
+            "This action requires user confirmation. The UI shows a preview with path and content summary — "
+            "do not repeat the path or content in your response; a brief intro line is sufficient."
+        )
     
     @property
     def parameters(self) -> dict[str, Any]:
@@ -126,7 +130,11 @@ class EditFileTool(Tool):
     
     @property
     def description(self) -> str:
-        return "Edit a file by replacing old_text with new_text. The old_text must exist exactly in the file."
+        return (
+            "Edit a file by replacing old_text with new_text. The old_text must exist exactly in the file. "
+            "This action requires user confirmation. The UI shows a preview with path and edit summary — "
+            "do not repeat the path or edit details in your response; a brief intro line is sufficient."
+        )
     
     @property
     def parameters(self) -> dict[str, Any]:

@@ -15,11 +15,8 @@ class XLikeTweetTool(XBaseTool):
     def description(self) -> str:
         return (
             "Like a tweet on X. "
-            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id.\n\n"
-            "DISPLAY FORMAT: Include this directive when confirming the liked tweet:\n"
-            '::x-tweet{text="<tweet_text>" author="@<author_username>" url="https://x.com/<author_username>/status/<tweet_id>" size="inline"}\n'
-            "Replace placeholders with actual values. If tweet text is not available from the response, omit the text attribute.\n"
-            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.'
+            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id. "
+            "This action requires user confirmation. The UI shows a preview — do not repeat the action details in your response."
         )
 
     @property
@@ -53,7 +50,10 @@ class XUnlikeTweetTool(XBaseTool):
 
     @property
     def description(self) -> str:
-        return "Unlike a previously liked tweet on X. Authentication is automatic."
+        return (
+            "Unlike a previously liked tweet on X. Authentication is automatic. "
+            "This action requires user confirmation. The UI shows a preview — do not repeat the action details in your response."
+        )
 
     @property
     def parameters(self) -> dict[str, Any]:

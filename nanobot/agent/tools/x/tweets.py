@@ -15,11 +15,9 @@ class XPostTweetTool(XBaseTool):
     def description(self) -> str:
         return (
             "Post a tweet on X (Twitter). Can optionally reply to an existing tweet or quote-tweet. "
-            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id.\n\n"
-            "DISPLAY FORMAT: Include this directive when confirming the posted tweet:\n"
-            '::x-tweet{text="<tweet_text>" author="@<your_username>" url="https://x.com/<your_username>/status/<tweet_id>" size="default"}\n'
-            "Replace placeholders with actual values from the response. Use the tweet_id from the response for the url.\n"
-            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.'
+            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id. "
+            "This action requires user confirmation. The UI automatically shows a preview card with the tweet text — "
+            "do not repeat the tweet content or include display directives in your response; a brief intro line (e.g. \"Here's the tweet:\") is sufficient."
         )
 
     @property
@@ -61,7 +59,8 @@ class XDeleteTweetTool(XBaseTool):
     def description(self) -> str:
         return (
             "Delete a tweet by its ID. Only works for tweets posted by the authenticated user. "
-            "Authentication is automatic."
+            "Authentication is automatic. "
+            "This action requires user confirmation. The UI shows a preview — do not repeat the action details in your response."
         )
 
     @property

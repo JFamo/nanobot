@@ -15,11 +15,8 @@ class XFollowUserTool(XBaseTool):
     def description(self) -> str:
         return (
             "Follow a user on X by their user ID. "
-            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id.\n\n"
-            "DISPLAY FORMAT: Include this directive when confirming the follow:\n"
-            '::x-user{name="<display_name>" username="@<username>" url="https://x.com/<username>" size="inline"}\n'
-            "Replace placeholders with actual values from the response. Omit attributes not available.\n"
-            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.'
+            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id. "
+            "This action requires user confirmation. The UI shows a preview — do not repeat the action details in your response."
         )
 
     @property
@@ -53,7 +50,10 @@ class XUnfollowUserTool(XBaseTool):
 
     @property
     def description(self) -> str:
-        return "Unfollow a user on X by their user ID. Authentication is automatic."
+        return (
+            "Unfollow a user on X by their user ID. Authentication is automatic. "
+            "This action requires user confirmation. The UI shows a preview — do not repeat the action details in your response."
+        )
 
     @property
     def parameters(self) -> dict[str, Any]:

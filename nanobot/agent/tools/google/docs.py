@@ -15,11 +15,9 @@ class GoogleDocsCreateTool(GoogleBaseTool):
     def description(self) -> str:
         return (
             "Create a new Google Doc with a given title. Returns the document ID and URL. "
-            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id.\n\n"
-            "DISPLAY FORMAT: Always include this directive in your response so the UI renders a preview card:\n"
-            '::google-doc{url="<document_url>" title="<document_title>" size="default"}\n'
-            "Replace <document_url> and <document_title> with actual values from the response.\n"
-            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.'
+            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id. "
+            "This action requires user confirmation. The UI automatically shows a preview card with the title — "
+            "do not repeat the parameters or include display directives in your response; a brief intro line is sufficient."
         )
 
     @property
@@ -97,11 +95,9 @@ class GoogleDocsAppendTool(GoogleBaseTool):
     def description(self) -> str:
         return (
             "Append text to the end of a Google Doc. "
-            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id.\n\n"
-            "DISPLAY FORMAT: Include this directive when confirming the update:\n"
-            '::google-doc{url="https://docs.google.com/document/d/<document_id>/edit" title="<document_title>" size="default"}\n'
-            "Replace <document_id> and <document_title> with actual values.\n"
-            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.'
+            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id. "
+            "This action requires user confirmation. The UI automatically shows a preview card with document and text — "
+            "do not repeat those parameters or include display directives in your response; a brief intro line is sufficient."
         )
 
     @property
@@ -149,11 +145,9 @@ class GoogleDocsInsertTool(GoogleBaseTool):
         return (
             "Insert text at a specific character index in a Google Doc. "
             "Use docs_get first to determine the correct index position. "
-            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id.\n\n"
-            "DISPLAY FORMAT: Include this directive when confirming the update:\n"
-            '::google-doc{url="https://docs.google.com/document/d/<document_id>/edit" title="<document_title>" size="default"}\n'
-            "Replace <document_id> and <document_title> with actual values.\n"
-            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.'
+            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id. "
+            "This action requires user confirmation. The UI automatically shows a preview card with document, text, and index — "
+            "do not repeat those parameters or include display directives in your response; a brief intro line is sufficient."
         )
 
     @property

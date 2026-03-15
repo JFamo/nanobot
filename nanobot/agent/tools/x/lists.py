@@ -15,11 +15,9 @@ class XCreateListTool(XBaseTool):
     def description(self) -> str:
         return (
             "Create a new list on X. "
-            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id.\n\n"
-            "DISPLAY FORMAT: Include this directive when confirming the created list:\n"
-            '::x-list{name="<list_name>" url="https://x.com/i/lists/<list_id>" members="0 members" size="default"}\n'
-            "Replace placeholders with actual values from the response.\n"
-            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.'
+            "Authentication is automatic — never ask the user for credentials, tokens, or bot_id. "
+            "This action requires user confirmation. The UI automatically shows a preview card with list name and options — "
+            "do not repeat those parameters or include display directives in your response; a brief intro line is sufficient."
         )
 
     @property
@@ -59,7 +57,10 @@ class XDeleteListTool(XBaseTool):
 
     @property
     def description(self) -> str:
-        return "Delete a list on X by its ID. Authentication is automatic."
+        return (
+            "Delete a list on X by its ID. Authentication is automatic. "
+            "This action requires user confirmation. The UI shows a preview — do not repeat the action details in your response."
+        )
 
     @property
     def parameters(self) -> dict[str, Any]:
@@ -160,7 +161,10 @@ class XAddListMemberTool(XBaseTool):
 
     @property
     def description(self) -> str:
-        return "Add a user to an X list. Authentication is automatic."
+        return (
+            "Add a user to an X list. Authentication is automatic. "
+            "This action requires user confirmation. The UI shows a preview — do not repeat the action details in your response."
+        )
 
     @property
     def parameters(self) -> dict[str, Any]:
@@ -194,7 +198,10 @@ class XRemoveListMemberTool(XBaseTool):
 
     @property
     def description(self) -> str:
-        return "Remove a user from an X list. Authentication is automatic."
+        return (
+            "Remove a user from an X list. Authentication is automatic. "
+            "This action requires user confirmation. The UI shows a preview — do not repeat the action details in your response."
+        )
 
     @property
     def parameters(self) -> dict[str, Any]:
