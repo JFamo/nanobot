@@ -58,9 +58,11 @@ class GoogleDocsGetTool(GoogleBaseTool):
             "Read the plain text content of a Google Doc by its document ID. "
             "Authentication is automatic — never ask the user for credentials, tokens, or bot_id.\n\n"
             "DISPLAY FORMAT: Include this directive when referencing the document:\n"
-            '::google-doc{url="https://docs.google.com/document/d/<document_id>/edit" title="<document_title>" size="default"}\n'
-            "Replace <document_id> and <document_title> with actual values.\n"
-            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.'
+            '::google-doc{url="https://docs.google.com/document/d/<document_id>/edit" title="<document_title>" content="<content_truncated_300_no_quotes>" size="default"}\n'
+            "Replace placeholders with actual values. Truncate content to ~300 characters and strip double-quote characters.\n"
+            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.\n'
+            "Do NOT write out the full document content as text — the directive renders a rich preview card with a content snippet automatically. "
+            "Only add a brief natural-language intro or analysis before the directive."
         )
 
     @property

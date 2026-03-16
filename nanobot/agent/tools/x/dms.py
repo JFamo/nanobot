@@ -59,9 +59,10 @@ class XGetDmEventsTool(XBaseTool):
         return (
             "Get recent DM events (messages) across all conversations on X. Authentication is automatic.\n\n"
             "DISPLAY FORMAT: Include a directive for EACH DM event in your response:\n"
-            '::x-dm{text="<message_text>" participant="@<sender_username>" size="compact"}\n'
-            "Use compact size when listing multiple messages. Replace placeholders with actual values from each event.\n"
-            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.'
+            '::x-dm{text="<message_text>" participant="@<sender_username>" date="<created_at>" size="compact"}\n'
+            "Use compact size when listing multiple messages. Replace placeholders with actual values.\n"
+            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.\n'
+            "Do NOT write out DM content as text — the directive renders a rich preview card automatically."
         )
 
     @property
@@ -100,9 +101,10 @@ class XGetDmConversationTool(XBaseTool):
         return (
             "Get DM events from a specific conversation on X by conversation ID. Authentication is automatic.\n\n"
             "DISPLAY FORMAT: Include a directive for EACH DM event in your response:\n"
-            '::x-dm{text="<message_text>" participant="@<sender_username>" size="compact"}\n'
-            "Use compact size when listing multiple messages. Replace placeholders with actual values from each event.\n"
-            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.'
+            '::x-dm{text="<message_text>" participant="@<sender_username>" date="<created_at>" size="compact"}\n'
+            "Use compact size when listing multiple messages. Replace placeholders with actual values.\n"
+            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.\n'
+            "Do NOT write out DM content as text — the directive renders a rich preview card automatically."
         )
 
     @property

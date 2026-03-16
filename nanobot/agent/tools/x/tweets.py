@@ -98,9 +98,10 @@ class XGetTweetTool(XBaseTool):
             "Get the full content of a specific tweet by its ID, including author info and engagement metrics. "
             "Authentication is automatic.\n\n"
             "DISPLAY FORMAT: Include this directive when presenting the tweet:\n"
-            '::x-tweet{text="<tweet_text>" author="@<author_username>" url="https://x.com/<author_username>/status/<tweet_id>" metrics="<likes> likes · <retweets> retweets" size="default"}\n'
-            "Replace placeholders with actual values. Build the url from the author's username and tweet id.\n"
-            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.'
+            '::x-tweet{text="<tweet_text>" authorname="<display_name>" authorhandle="@<username>" url="https://x.com/<username>/status/<tweet_id>" date="<created_at>" likes="<like_count>" retweets="<retweet_count>" replies="<reply_count>" views="<impression_count>" size="default"}\n'
+            "Replace placeholders with actual values. Build the url from the author's username and tweet id. Omit any metric that is 0 or unavailable.\n"
+            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.\n'
+            "Do NOT write out tweet content or metrics as text — the directive renders a rich preview card automatically."
         )
 
     @property
@@ -135,9 +136,10 @@ class XSearchTweetsTool(XBaseTool):
             "(e.g. 'from:username', '#hashtag', 'keyword -filter:retweets'). "
             "Authentication is automatic.\n\n"
             "DISPLAY FORMAT: Include a directive for EACH matching tweet in your response:\n"
-            '::x-tweet{text="<tweet_text>" author="@<author_username>" url="https://x.com/<author_username>/status/<tweet_id>" metrics="<likes> likes · <retweets> retweets" size="compact"}\n'
-            "Use compact size when listing multiple tweets. Replace placeholders with actual values from each tweet.\n"
-            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.'
+            '::x-tweet{text="<tweet_text>" authorname="<display_name>" authorhandle="@<username>" url="https://x.com/<username>/status/<tweet_id>" date="<created_at>" likes="<like_count>" retweets="<retweet_count>" size="compact"}\n'
+            "Use compact size when listing multiple tweets. Replace placeholders with actual values. Omit zero metrics.\n"
+            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.\n'
+            "Do NOT write out tweet content as text — the directive renders a rich preview card automatically."
         )
 
     @property
@@ -178,9 +180,10 @@ class XGetUserTweetsTool(XBaseTool):
             "Get recent tweets posted by a specific X user (by their X user ID). "
             "Authentication is automatic.\n\n"
             "DISPLAY FORMAT: Include a directive for EACH tweet in your response:\n"
-            '::x-tweet{text="<tweet_text>" author="@<author_username>" url="https://x.com/<author_username>/status/<tweet_id>" metrics="<likes> likes · <retweets> retweets" size="compact"}\n'
-            "Use compact size when listing multiple tweets. Replace placeholders with actual values from each tweet.\n"
-            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.'
+            '::x-tweet{text="<tweet_text>" authorname="<display_name>" authorhandle="@<username>" url="https://x.com/<username>/status/<tweet_id>" date="<created_at>" likes="<like_count>" retweets="<retweet_count>" size="compact"}\n'
+            "Use compact size when listing multiple tweets. Replace placeholders with actual values. Omit zero metrics.\n"
+            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.\n'
+            "Do NOT write out tweet content as text — the directive renders a rich preview card automatically."
         )
 
     @property
@@ -221,9 +224,10 @@ class XGetUserMentionsTool(XBaseTool):
             "Get recent tweets mentioning a specific X user (by their X user ID). "
             "Authentication is automatic.\n\n"
             "DISPLAY FORMAT: Include a directive for EACH mention in your response:\n"
-            '::x-tweet{text="<tweet_text>" author="@<author_username>" url="https://x.com/<author_username>/status/<tweet_id>" metrics="<likes> likes · <retweets> retweets" size="compact"}\n'
-            "Use compact size when listing multiple mentions. Replace placeholders with actual values from each tweet.\n"
-            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.'
+            '::x-tweet{text="<tweet_text>" authorname="<display_name>" authorhandle="@<username>" url="https://x.com/<username>/status/<tweet_id>" date="<created_at>" likes="<like_count>" retweets="<retweet_count>" size="compact"}\n'
+            "Use compact size when listing multiple mentions. Replace placeholders with actual values. Omit zero metrics.\n"
+            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.\n'
+            "Do NOT write out tweet content as text — the directive renders a rich preview card automatically."
         )
 
     @property

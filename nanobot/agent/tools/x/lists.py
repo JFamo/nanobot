@@ -96,9 +96,10 @@ class XGetListTool(XBaseTool):
         return (
             "Get details of an X list by its ID. Authentication is automatic.\n\n"
             "DISPLAY FORMAT: Include this directive when presenting the list:\n"
-            '::x-list{name="<list_name>" description="<list_description>" url="https://x.com/i/lists/<list_id>" members="<member_count> members" size="default"}\n'
-            "Replace placeholders with actual values. Omit description if not available.\n"
-            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.'
+            '::x-list{name="<list_name>" description="<list_description>" url="https://x.com/i/lists/<list_id>" members="<member_count> members" owner="<owner_username>" size="default"}\n'
+            "Replace placeholders with actual values. Omit description or owner if not available.\n"
+            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.\n'
+            "Do NOT write out list details as text — the directive renders a rich preview card automatically."
         )
 
     @property
@@ -131,9 +132,10 @@ class XGetOwnedListsTool(XBaseTool):
         return (
             "Get all lists owned by the authenticated X user. Authentication is automatic.\n\n"
             "DISPLAY FORMAT: Include a directive for EACH list in your response:\n"
-            '::x-list{name="<list_name>" url="https://x.com/i/lists/<list_id>" members="<member_count> members" size="compact"}\n'
-            "Use compact size when listing multiple lists. Replace placeholders with actual values from each list.\n"
-            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.'
+            '::x-list{name="<list_name>" url="https://x.com/i/lists/<list_id>" members="<member_count> members" owner="<owner_username>" size="compact"}\n'
+            "Use compact size when listing multiple lists. Replace placeholders with actual values. Omit owner if unavailable.\n"
+            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.\n'
+            "Do NOT write out list details as text — the directive renders a rich preview card automatically."
         )
 
     @property

@@ -76,9 +76,10 @@ class GoogleDriveListTool(GoogleBaseTool):
             "List files in Google Drive, optionally filtering by query or folder. "
             "Authentication is automatic — never ask the user for credentials, tokens, or bot_id.\n\n"
             "DISPLAY FORMAT: Include a directive for EACH file in your response:\n"
-            '::google-drive{name="<file_name>" url="<webViewLink>" type="file" size="compact"}\n'
-            "Use compact size when listing multiple files. For folders use type=\"folder\". Replace placeholders with actual values.\n"
-            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.'
+            '::google-drive{name="<file_name>" url="<webViewLink>" type="file" modified="<modifiedTime>" filesize="<size>" size="compact"}\n'
+            "Use compact size when listing multiple files. For folders use type=\"folder\". Replace placeholders with actual values. Omit empty fields.\n"
+            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.\n'
+            "Do NOT write out file details as text — the directive renders a rich preview card automatically."
         )
 
     @property
@@ -127,9 +128,10 @@ class GoogleDriveGetTool(GoogleBaseTool):
             "Get metadata for a Google Drive file by ID (name, type, size, owner, link). "
             "Authentication is automatic — never ask the user for credentials, tokens, or bot_id.\n\n"
             "DISPLAY FORMAT: Include this directive when presenting file details:\n"
-            '::google-drive{name="<file_name>" url="<webViewLink>" type="file" size="default"}\n'
-            "Replace placeholders with actual values. For folders use type=\"folder\".\n"
-            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.'
+            '::google-drive{name="<file_name>" url="<webViewLink>" type="file" mimetype="<mimeType>" modified="<modifiedTime>" filesize="<size>" description="<desc>" owner="<owner_name>" size="default"}\n'
+            "Replace placeholders with actual values. For folders use type=\"folder\". Omit any empty field.\n"
+            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.\n'
+            "Do NOT write out file details as text — the directive renders a rich preview card automatically."
         )
 
     @property
@@ -346,9 +348,10 @@ class GoogleDriveSearchTool(GoogleBaseTool):
             "e.g. \"name contains 'report'\" or \"mimeType='application/pdf'\". "
             "Authentication is automatic — never ask the user for credentials, tokens, or bot_id.\n\n"
             "DISPLAY FORMAT: Include a directive for EACH matching file in your response:\n"
-            '::google-drive{name="<file_name>" url="<webViewLink>" type="file" size="compact"}\n'
-            "Use compact size when listing multiple results. For folders use type=\"folder\". Replace placeholders with actual values.\n"
-            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.'
+            '::google-drive{name="<file_name>" url="<webViewLink>" type="file" modified="<modifiedTime>" filesize="<size>" size="compact"}\n'
+            "Use compact size when listing multiple results. For folders use type=\"folder\". Replace placeholders with actual values. Omit empty fields.\n"
+            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.\n'
+            "Do NOT write out file details as text — the directive renders a rich preview card automatically."
         )
 
     @property

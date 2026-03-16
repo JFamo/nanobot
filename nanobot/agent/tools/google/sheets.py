@@ -58,9 +58,10 @@ class GoogleSheetsGetTool(GoogleBaseTool):
             "Get metadata for a Google Spreadsheet, including sheet names and dimensions. "
             "Authentication is automatic — never ask the user for credentials, tokens, or bot_id.\n\n"
             "DISPLAY FORMAT: Include this directive when referencing the spreadsheet:\n"
-            '::google-sheet{url="https://docs.google.com/spreadsheets/d/<spreadsheet_id>/edit" title="<spreadsheet_title>" size="default"}\n'
-            "Replace placeholders with actual values.\n"
-            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.'
+            '::google-sheet{url="https://docs.google.com/spreadsheets/d/<spreadsheet_id>/edit" title="<spreadsheet_title>" sheets="<Sheet1,Sheet2,...>" size="default"}\n'
+            "Replace placeholders with actual values. List sheet/tab names as comma-separated values in the sheets attribute.\n"
+            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.\n'
+            "Do NOT write out spreadsheet metadata as text — the directive renders a rich preview card automatically."
         )
 
     @property
@@ -98,9 +99,10 @@ class GoogleSheetsReadRangeTool(GoogleBaseTool):
             "(e.g. 'Sheet1!A1:D10'). Returns a 2D array of values. "
             "Authentication is automatic — never ask the user for credentials, tokens, or bot_id.\n\n"
             "DISPLAY FORMAT: Include this directive when referencing the spreadsheet:\n"
-            '::google-sheet{url="https://docs.google.com/spreadsheets/d/<spreadsheet_id>/edit" title="<spreadsheet_title>" size="default"}\n'
-            "Replace placeholders with actual values.\n"
-            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.'
+            '::google-sheet{url="https://docs.google.com/spreadsheets/d/<spreadsheet_id>/edit" title="<spreadsheet_title>" range="<range_notation>" data="<JSON_2D_array_first_6_rows>" size="default"}\n'
+            "Replace placeholders with actual values. For the data attribute, include up to 6 rows as a JSON 2D array (e.g. [[\"Name\",\"Age\"],[\"Alice\",\"30\"]]). Strip double-quote characters within cell values.\n"
+            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.\n'
+            "Do NOT write out spreadsheet data as text or a markdown table — the directive renders a rich preview card with an inline table automatically."
         )
 
     @property

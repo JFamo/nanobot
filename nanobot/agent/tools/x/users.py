@@ -17,9 +17,10 @@ class XGetMeTool(XBaseTool):
             "Get the authenticated X user's profile (name, username, bio, follower count, etc.). "
             "Authentication is automatic — never ask the user for credentials, tokens, or bot_id.\n\n"
             "DISPLAY FORMAT: Include this directive when presenting the user profile:\n"
-            '::x-user{name="<display_name>" username="@<username>" url="https://x.com/<username>" bio="<bio_text>" metrics="<followers_count> followers · <following_count> following" size="default"}\n'
-            "Replace placeholders with actual values. Omit bio if not available.\n"
-            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.'
+            '::x-user{name="<display_name>" username="@<username>" url="https://x.com/<username>" bio="<bio_text>" followers="<followers_count>" following="<following_count>" tweets="<tweet_count>" verified="<true|false>" joined="<created_at_readable>" size="default"}\n'
+            "Replace placeholders with actual values. Omit any empty field.\n"
+            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.\n'
+            "Do NOT write out profile details as text — the directive renders a rich preview card automatically."
         )
 
     @property
@@ -50,9 +51,10 @@ class XGetUserByIdTool(XBaseTool):
         return (
             "Look up an X user by their numeric user ID. Authentication is automatic.\n\n"
             "DISPLAY FORMAT: Include this directive when presenting the user:\n"
-            '::x-user{name="<display_name>" username="@<username>" url="https://x.com/<username>" bio="<bio_text>" metrics="<followers_count> followers · <following_count> following" size="default"}\n'
-            "Replace placeholders with actual values. Omit bio if not available.\n"
-            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.'
+            '::x-user{name="<display_name>" username="@<username>" url="https://x.com/<username>" bio="<bio_text>" followers="<followers_count>" following="<following_count>" tweets="<tweet_count>" verified="<true|false>" joined="<created_at_readable>" size="default"}\n'
+            "Replace placeholders with actual values. Omit any empty field.\n"
+            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.\n'
+            "Do NOT write out profile details as text — the directive renders a rich preview card automatically."
         )
 
     @property
@@ -86,9 +88,10 @@ class XGetUserByUsernameTool(XBaseTool):
             "Look up an X user by their @username (without the @ symbol). "
             "Authentication is automatic.\n\n"
             "DISPLAY FORMAT: Include this directive when presenting the user:\n"
-            '::x-user{name="<display_name>" username="@<username>" url="https://x.com/<username>" bio="<bio_text>" metrics="<followers_count> followers · <following_count> following" size="default"}\n'
-            "Replace placeholders with actual values. Omit bio if not available.\n"
-            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.'
+            '::x-user{name="<display_name>" username="@<username>" url="https://x.com/<username>" bio="<bio_text>" followers="<followers_count>" following="<following_count>" tweets="<tweet_count>" verified="<true|false>" joined="<created_at_readable>" size="default"}\n'
+            "Replace placeholders with actual values. Omit any empty field.\n"
+            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.\n'
+            "Do NOT write out profile details as text — the directive renders a rich preview card automatically."
         )
 
     @property

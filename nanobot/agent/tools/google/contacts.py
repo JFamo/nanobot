@@ -17,9 +17,10 @@ class GoogleContactsListTool(GoogleBaseTool):
             "List the user's Google Contacts. Returns names, emails, and phone numbers. "
             "Authentication is automatic — never ask the user for credentials, tokens, or bot_id.\n\n"
             "DISPLAY FORMAT: Include a directive for EACH contact in your response:\n"
-            '::google-contact{name="<full_name>" email="<email>" phone="<phone>" size="compact"}\n'
-            "Use compact size when listing multiple contacts. Omit email or phone if not available. Replace placeholders with actual values.\n"
-            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.'
+            '::google-contact{name="<full_name>" email="<email>" phone="<phone>" organization="<org>" size="compact"}\n'
+            "Use compact size when listing multiple contacts. Omit any empty field. Replace placeholders with actual values.\n"
+            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.\n'
+            "Do NOT write out contact details as text — the directive renders a rich preview card automatically."
         )
 
     @property
@@ -59,9 +60,10 @@ class GoogleContactsGetTool(GoogleBaseTool):
             "Get a specific Google Contact by resource name (e.g. 'people/c12345'). "
             "Authentication is automatic — never ask the user for credentials, tokens, or bot_id.\n\n"
             "DISPLAY FORMAT: Include this directive when presenting contact details:\n"
-            '::google-contact{name="<full_name>" email="<email>" phone="<phone>" size="default"}\n'
-            "Replace placeholders with actual values. Omit email or phone if not available.\n"
-            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.'
+            '::google-contact{name="<full_name>" email="<email>" phone="<phone>" organization="<org>" jobtitle="<title>" size="default"}\n'
+            "Replace placeholders with actual values. Omit any empty field.\n"
+            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.\n'
+            "Do NOT write out contact details as text — the directive renders a rich preview card automatically."
         )
 
     @property
@@ -252,9 +254,10 @@ class GoogleContactsSearchTool(GoogleBaseTool):
             "Search Google Contacts by name, email, phone number, or other fields. "
             "Authentication is automatic — never ask the user for credentials, tokens, or bot_id.\n\n"
             "DISPLAY FORMAT: Include a directive for EACH matching contact in your response:\n"
-            '::google-contact{name="<full_name>" email="<email>" phone="<phone>" size="compact"}\n'
-            "Use compact size when listing multiple results. Omit email or phone if not available. Replace placeholders with actual values.\n"
-            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.'
+            '::google-contact{name="<full_name>" email="<email>" phone="<phone>" organization="<org>" size="compact"}\n'
+            "Use compact size when listing multiple results. Omit any empty field. Replace placeholders with actual values.\n"
+            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.\n'
+            "Do NOT write out contact details as text — the directive renders a rich preview card automatically."
         )
 
     @property

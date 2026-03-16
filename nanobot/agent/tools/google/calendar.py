@@ -90,9 +90,11 @@ class GoogleCalendarListEventsTool(GoogleBaseTool):
             "List Google Calendar events, optionally filtered by time range or search query. "
             "Authentication is automatic — never ask the user for credentials, tokens, or bot_id.\n\n"
             "DISPLAY FORMAT: Include a directive for EACH event in your response:\n"
-            '::google-calendar-event{title="<event_title>" date="<start_time_iso>" url="<htmlLink>" size="compact"}\n'
-            "Use compact size when listing multiple events. Replace placeholders with actual values from each event.\n"
-            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.'
+            '::google-calendar-event{title="<title>" start="<start_iso>" end="<end_iso>" location="<location>" url="<htmlLink>" size="compact"}\n'
+            "Use compact size when listing multiple events. Replace placeholders with actual values. Omit location if not set.\n"
+            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.\n'
+            "Do NOT write out event details as text — the directive renders a rich preview card automatically. "
+            "Only add a brief natural-language intro before the directives."
         )
 
     @property
@@ -152,9 +154,11 @@ class GoogleCalendarGetEventTool(GoogleBaseTool):
             "Get details of a specific Google Calendar event by ID. "
             "Authentication is automatic — never ask the user for credentials, tokens, or bot_id.\n\n"
             "DISPLAY FORMAT: Include this directive when presenting event details:\n"
-            '::google-calendar-event{title="<event_title>" date="<start_time_iso>" url="<htmlLink>" size="default"}\n'
-            "Replace placeholders with actual values. Use the htmlLink from the response for the url.\n"
-            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.'
+            '::google-calendar-event{title="<title>" start="<start_iso>" end="<end_iso>" location="<location>" description="<desc_truncated_300_no_quotes>" attendees="<name1,name2,...>" status="<confirmed|tentative|cancelled>" organizer="<organizer_email>" url="<htmlLink>" size="default"}\n'
+            "Replace placeholders with actual values. Omit any field that is empty. Truncate description to ~300 chars and strip quotes.\n"
+            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.\n'
+            "Do NOT write out event details as text — the directive renders a rich preview card automatically. "
+            "Only add a brief natural-language intro before the directive."
         )
 
     @property

@@ -62,9 +62,11 @@ class GmailListTool(GoogleBaseTool):
             "List emails in the Gmail inbox. Optionally filter by query or label. "
             "Authentication is automatic — never ask the user for credentials, tokens, or bot_id.\n\n"
             "DISPLAY FORMAT: Include a directive for EACH email in your response:\n"
-            '::gmail{subject="<email_subject>" from="<sender_email>" url="https://mail.google.com/mail/u/0/#inbox/<message_id>" size="compact"}\n'
+            '::gmail{subject="<subject>" from="<sender>" date="<date>" snippet="<snippet>" url="https://mail.google.com/mail/u/0/#inbox/<message_id>" size="compact"}\n'
             "Use compact size when listing multiple emails. Replace placeholders with actual values. Use each message's ID for the url.\n"
-            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.'
+            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.\n'
+            "Do NOT write out email details as text, markdown tables, or bullet lists — the directive renders a rich preview card automatically. "
+            "Only add a brief natural-language intro before the directives."
         )
 
     @property
@@ -117,9 +119,11 @@ class GmailGetTool(GoogleBaseTool):
             "Get the full content of a specific Gmail message by its ID, including subject, sender, and body. "
             "Authentication is automatic — never ask the user for credentials, tokens, or bot_id.\n\n"
             "DISPLAY FORMAT: Include this directive when presenting the email:\n"
-            '::gmail{subject="<email_subject>" from="<sender_email>" url="https://mail.google.com/mail/u/0/#inbox/<message_id>" size="default"}\n'
-            "Replace placeholders with actual values. Use the message ID for the url.\n"
-            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.'
+            '::gmail{subject="<subject>" from="<sender>" to="<recipient>" date="<date>" body="<body_truncated_300_chars_no_quotes>" url="https://mail.google.com/mail/u/0/#inbox/<message_id>" size="default"}\n'
+            "Replace placeholders with actual values. Truncate body to ~300 characters and remove any double-quote characters. Use the message ID for the url.\n"
+            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.\n'
+            "Do NOT write out email body or details as text — the directive renders a rich preview card automatically. "
+            "Only add a brief natural-language intro before the directive."
         )
 
     @property
@@ -157,9 +161,11 @@ class GmailSearchTool(GoogleBaseTool):
             "(e.g. 'from:alice subject:invoice has:attachment'). "
             "Authentication is automatic — never ask the user for credentials, tokens, or bot_id.\n\n"
             "DISPLAY FORMAT: Include a directive for EACH matching email in your response:\n"
-            '::gmail{subject="<email_subject>" from="<sender_email>" url="https://mail.google.com/mail/u/0/#inbox/<message_id>" size="compact"}\n'
+            '::gmail{subject="<subject>" from="<sender>" date="<date>" snippet="<snippet>" url="https://mail.google.com/mail/u/0/#inbox/<message_id>" size="compact"}\n'
             "Use compact size when listing multiple results. Replace placeholders with actual values. Use each message's ID for the url.\n"
-            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.'
+            'Size options: "default" for standalone results, "compact" when listing multiple items, "inline" for brief mentions in text.\n'
+            "Do NOT write out email details as text — the directive renders a rich preview card automatically. "
+            "Only add a brief natural-language intro before the directives."
         )
 
     @property
