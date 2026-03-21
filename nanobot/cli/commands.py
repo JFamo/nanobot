@@ -279,6 +279,17 @@ def gateway(
     console.print(f"{__logo__} Starting nanobot gateway on port {port}...")
     
     config = load_config()
+
+    # Auto-enable web_relay when running inside a coordinator-managed container
+    import os as _os
+    coordinator_url = _os.environ.get("COORDINATOR_URL", "")
+    bot_id_env = _os.environ.get("BOT_ID", "")
+    if coordinator_url and bot_id_env and not config.channels.web_relay.enabled:
+        config.channels.web_relay.enabled = True
+        config.channels.web_relay.coordinator_url = coordinator_url
+        config.channels.web_relay.bot_id = bot_id_env
+        logger.info("Web relay auto-enabled (coordinator: {}, bot_id: {})", coordinator_url, bot_id_env)
+
     sync_workspace_templates(config.workspace_path)
     bus = MessageBus()
     provider = _make_provider(config)

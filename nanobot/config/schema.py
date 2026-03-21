@@ -42,6 +42,15 @@ class TelegramRelayConfig(Base):
     bot_id: str = ""  # Bot ID registered with coordinator
 
 
+class WebRelayConfig(Base):
+    """Web relay channel configuration (HTTP-based via coordinator for browser push)."""
+
+    enabled: bool = False
+    mode: str = "relay"
+    coordinator_url: str = ""
+    bot_id: str = ""
+
+
 class FeishuConfig(Base):
     """Feishu/Lark channel configuration using WebSocket long connection."""
 
@@ -216,6 +225,7 @@ class ChannelsConfig(Base):
     whatsapp: WhatsAppConfig = Field(default_factory=WhatsAppConfig)
     telegram: TelegramConfig = Field(default_factory=TelegramConfig)
     telegram_relay: TelegramRelayConfig = Field(default_factory=TelegramRelayConfig)
+    web_relay: WebRelayConfig = Field(default_factory=WebRelayConfig)
     discord: DiscordConfig = Field(default_factory=DiscordConfig)
     feishu: FeishuConfig = Field(default_factory=FeishuConfig)
     mochat: MochatConfig = Field(default_factory=MochatConfig)

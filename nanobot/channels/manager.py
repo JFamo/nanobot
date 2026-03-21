@@ -58,6 +58,18 @@ class ChannelManager:
                 logger.info("Telegram relay channel enabled")
             except ImportError as e:
                 logger.warning("Telegram relay channel not available: {}", e)
+
+        # Web relay channel
+        if self.config.channels.web_relay.enabled:
+            try:
+                from nanobot.channels.web_relay import WebRelayChannel
+                self.channels["web_relay"] = WebRelayChannel(
+                    self.config.channels.web_relay,
+                    self.bus,
+                )
+                logger.info("Web relay channel enabled")
+            except ImportError as e:
+                logger.warning("Web relay channel not available: {}", e)
         
         # WhatsApp channel
         if self.config.channels.whatsapp.enabled:
