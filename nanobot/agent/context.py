@@ -200,11 +200,26 @@ You should actively learn about the user throughout conversations:
 - Note feedback and adjustments"""
     
     @staticmethod
-    def _build_runtime_context(channel: str | None, chat_id: str | None) -> str:
+    def _build_runtime_context(
+        channel: str | None,
+        chat_id: str | None,
+        timezone: str | None = None,
+    ) -> str:
         """Build untrusted runtime metadata block for injection before the user message."""
-        now = datetime.now().strftime("%Y-%m-%d %H:%M (%A)")
-        tz = time.strftime("%Z") or "UTC"
-        lines = [f"Current Time: {now} ({tz})"]
+        tz_label = "UTC"
+        if timezone:
+            try:
+                from zoneinfo import ZoneInfo
+                user_tz = ZoneInfo(timezone)
+                now = datetime.now(user_tz).strftime("%Y-%m-%d %H:%M (%A)")
+                tz_label = timezone
+            except (KeyError, Exception):
+                now = datetime.now().strftime("%Y-%m-%d %H:%M (%A)")
+                tz_label = time.strftime("%Z") or "UTC"
+        else:
+            now = datetime.now().strftime("%Y-%m-%d %H:%M (%A)")
+            tz_label = time.strftime("%Z") or "UTC"
+        lines = [f"Current Time: {now} ({tz_label})"]
         if channel and chat_id:
             lines += [f"Channel: {channel}", f"Chat ID: {chat_id}"]
         return ContextBuilder._RUNTIME_CONTEXT_TAG + "\n" + "\n".join(lines)
@@ -229,12 +244,13 @@ You should actively learn about the user throughout conversations:
         media: list[str] | None = None,
         channel: str | None = None,
         chat_id: str | None = None,
+        timezone: str | None = None,
     ) -> list[dict[str, Any]]:
         """Build the complete message list for an LLM call."""
         return [
             {"role": "system", "content": self.build_system_prompt(skill_names)},
             *history,
-            {"role": "user", "content": self._build_runtime_context(channel, chat_id)},
+            {"role": "user", "content": self._build_runtime_context(channel, chat_id, timezone=timezone)},
             {"role": "user", "content": self._build_user_content(current_message, media)},
         ]
 

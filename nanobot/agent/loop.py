@@ -448,6 +448,7 @@ class AgentLoop:
         msg: InboundMessage,
         session_key: str | None = None,
         on_progress: Callable[[str], Awaitable[None]] | None = None,
+        timezone: str | None = None,
     ) -> OutboundMessage | None:
         """Process a single inbound message and return the response."""
         # Set session context for logging
@@ -468,6 +469,7 @@ class AgentLoop:
             messages = self.context.build_messages(
                 history=history,
                 current_message=msg.content, channel=channel, chat_id=chat_id,
+                timezone=timezone,
             )
             final_content, _, all_msgs = await self._run_agent_loop(messages)
             self._save_turn(session, all_msgs, 1 + len(history))
@@ -544,6 +546,7 @@ class AgentLoop:
             current_message=msg.content,
             media=msg.media if msg.media else None,
             channel=msg.channel, chat_id=msg.chat_id,
+            timezone=timezone,
         )
 
         async def _bus_progress(content: str, *, tool_hint: bool = False) -> None:
@@ -614,6 +617,7 @@ class AgentLoop:
         on_progress: Callable[[str], Awaitable[None]] | None = None,
         on_message: Callable[[OutboundMessage], Awaitable[None]] | None = None,
         confirmation_supported: bool = False,
+        timezone: str | None = None,
     ) -> AgentResponse:
         """Process a message directly (for CLI, HTTP gateway, or cron usage).
 
@@ -642,7 +646,7 @@ class AgentLoop:
 
         try:
             msg = InboundMessage(channel=channel, sender_id="user", chat_id=chat_id, content=content)
-            response = await self._process_message(msg, session_key=session_key, on_progress=on_progress)
+            response = await self._process_message(msg, session_key=session_key, on_progress=on_progress, timezone=timezone)
             return AgentResponse(
                 content=response.content if response else "",
                 pending_actions=list(self._pending_actions),

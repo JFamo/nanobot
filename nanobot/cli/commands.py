@@ -435,12 +435,14 @@ def gateway(
 
         async def handle_agent_run(request):
             body = await request.json()
+            ctx = body.get("context") or {}
             result = await agent.process_direct(
                 body["message"],
                 session_key=body.get("session_key", "http:direct"),
                 channel=body.get("channel", "http"),
                 chat_id=body.get("chat_id", "direct"),
                 confirmation_supported=body.get("confirmation_supported", False),
+                timezone=ctx.get("timezone"),
             )
             return web.json_response({
                 "response": result.content,
@@ -495,6 +497,7 @@ def gateway(
 
             async def _run_agent():
                 try:
+                    ctx = body.get("context") or {}
                     result = await agent.process_direct(
                         body["message"],
                         session_key=body.get("session_key", "http:direct"),
@@ -503,6 +506,7 @@ def gateway(
                         on_progress=_on_progress,
                         on_message=_on_message,
                         confirmation_supported=body.get("confirmation_supported", False),
+                        timezone=ctx.get("timezone"),
                     )
                     await queue.put({
                         "type": "done",
