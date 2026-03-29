@@ -105,6 +105,7 @@ class AgentLoop:
         self._running = False
         self._confirmation_supported = False
         self._pending_actions: list[PendingAction] = []
+        self._last_final_content: str = ""
         self._mcp_servers = mcp_servers or {}
         self._mcp_stack: AsyncExitStack | None = None
         self._mcp_connected = False
@@ -567,6 +568,8 @@ class AgentLoop:
         if final_content is None:
             final_content = "I've completed processing but have no response to give."
 
+        self._last_final_content = final_content
+
         self._save_turn(session, all_msgs, 1 + len(history))
         self.sessions.save(session)
 
@@ -648,8 +651,27 @@ class AgentLoop:
         try:
             msg = InboundMessage(channel=channel, sender_id="user", chat_id=chat_id, content=content)
             response = await self._process_message(msg, session_key=session_key, on_progress=on_progress, timezone=timezone)
+
+            if response is not None:
+                resolved_content = response.content
+            elif isinstance(mt, MessageTool) and mt._sent_in_turn:
+                if on_message:
+                    # Streaming: message content already delivered via on_message
+                    # callbacks. The final text from the LLM (directives, etc.) is
+                    # intentionally suppressed — the message tool is the response.
+                    resolved_content = ""
+                else:
+                    # Non-streaming: message content was published to the bus but
+                    # the HTTP caller never sees it. Return the captured tool
+                    # content as the response. Final text (::setup-complete, etc.)
+                    # is intentionally excluded — those are internal directives,
+                    # not user-facing content.
+                    resolved_content = "\n\n".join(mt._sent_contents)
+            else:
+                resolved_content = ""
+
             return AgentResponse(
-                content=response.content if response else "",
+                content=resolved_content,
                 pending_actions=list(self._pending_actions),
             )
         finally:
