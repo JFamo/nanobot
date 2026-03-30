@@ -141,8 +141,9 @@ class AgentLoop:
         self,
         google_scopes: list[str] | None = None,
         x_scopes: list[str] | None = None,
+        github_scopes: list[str] | None = None,
     ) -> None:
-        """Register/deregister Google and X tools based on granted OAuth scopes.
+        """Register/deregister Google, X, and GitHub tools based on granted OAuth scopes.
 
         Computes the desired set of tools from the scope mapping, diffs against
         currently-registered scoped tools, and applies the minimal changes.
@@ -152,7 +153,7 @@ class AgentLoop:
             get_tools_for_scopes,
         )
 
-        desired = get_tools_for_scopes(google_scopes, x_scopes)
+        desired = get_tools_for_scopes(google_scopes, x_scopes, github_scopes)
         current_scoped = {
             name for name in self.tools.tool_names if name in ALL_SCOPED_TOOL_NAMES
         }
@@ -181,8 +182,8 @@ class AgentLoop:
             return
         try:
             from nanobot.coordinator.client import fetch_scopes
-            google_scopes, x_scopes = await fetch_scopes()
-            self.sync_scoped_tools(google_scopes, x_scopes)
+            google_scopes, x_scopes, github_scopes = await fetch_scopes()
+            self.sync_scoped_tools(google_scopes, x_scopes, github_scopes)
             self._scopes_fetched = True
         except Exception as e:
             logger.warning("Failed to fetch scopes from coordinator (tools will be added when scopes arrive): {}", e)

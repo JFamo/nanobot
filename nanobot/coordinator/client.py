@@ -86,20 +86,24 @@ async def report_usage(
         logger.debug("Failed to report token usage: {}", exc)
 
 
-async def fetch_scopes(timeout: float = 10) -> tuple[list[str], list[str]]:
+async def fetch_scopes(timeout: float = 10) -> tuple[list[str], list[str], list[str]]:
     """Fetch the OAuth scopes granted for this bot's owner.
 
-    Returns (google_scopes, x_scopes).  Raises on network or HTTP errors
+    Returns (google_scopes, x_scopes, github_scopes).  Raises on network or HTTP errors
     so the caller can decide how to handle a failure.
     """
     coordinator_url = os.environ.get("COORDINATOR_URL", "")
     bot_id = os.environ.get("BOT_ID", "")
     if not coordinator_url or not bot_id:
-        return [], []
+        return [], [], []
 
     url = f"{coordinator_url}/internal/scopes"
     async with httpx.AsyncClient(timeout=timeout) as client:
         resp = await client.get(url, params={"bot_id": bot_id}, headers=auth_headers())
     resp.raise_for_status()
     data = resp.json()
-    return data.get("google_scopes", []), data.get("x_scopes", [])
+    return (
+        data.get("google_scopes", []),
+        data.get("x_scopes", []),
+        data.get("github_scopes", []),
+    )

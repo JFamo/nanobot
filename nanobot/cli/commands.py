@@ -575,8 +575,9 @@ def gateway(
             body = await request.json()
             google_scopes = body.get("google_scopes", [])
             x_scopes = body.get("x_scopes", [])
+            github_scopes = body.get("github_scopes", [])
             try:
-                agent.sync_scoped_tools(google_scopes, x_scopes)
+                agent.sync_scoped_tools(google_scopes, x_scopes, github_scopes)
                 return web.json_response({"success": True})
             except Exception as e:
                 return web.json_response(

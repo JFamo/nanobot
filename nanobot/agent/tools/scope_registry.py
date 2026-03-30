@@ -1,7 +1,7 @@
 """Scope-to-tool mapping for dynamic tool registration based on OAuth scopes.
 
-Maps Google and X OAuth scopes to the tool classes they enable.  The agent
-loop uses these mappings to register only the tools a user actually has
+Maps Google, X, and GitHub OAuth scopes to the tool classes they enable.  The
+agent loop uses these mappings to register only the tools a user actually has
 permissions for, and to reconcile when scopes change at runtime.
 """
 
@@ -48,6 +48,30 @@ from nanobot.agent.tools.google import (
     GoogleContactsUpdateTool,
     GoogleContactsDeleteTool,
     GoogleContactsSearchTool,
+)
+from nanobot.agent.tools.github import (
+    GitHubCloseIssueTool,
+    GitHubCommentIssueTool,
+    GitHubCommentPrTool,
+    GitHubCreateGistTool,
+    GitHubCreateIssueTool,
+    GitHubCreatePrTool,
+    GitHubCreateRepoTool,
+    GitHubGetGistTool,
+    GitHubGetIssueTool,
+    GitHubGetMeTool,
+    GitHubGetPrTool,
+    GitHubGetRepoTool,
+    GitHubGetUserTool,
+    GitHubListGistsTool,
+    GitHubListIssuesTool,
+    GitHubListPrsTool,
+    GitHubListReposTool,
+    GitHubMergePrTool,
+    GitHubSearchReposTool,
+    GitHubStarRepoTool,
+    GitHubUnstarRepoTool,
+    GitHubUpdateIssueTool,
 )
 from nanobot.agent.tools.x import (
     XPostTweetTool,
@@ -205,6 +229,37 @@ X_SCOPE_TOOLS: dict[str, list[type[Tool]]] = {
     ],
 }
 
+GITHUB_SCOPE_TOOLS: dict[str, list[type[Tool]]] = {
+    "repo": [
+        GitHubListReposTool,
+        GitHubGetRepoTool,
+        GitHubCreateRepoTool,
+        GitHubSearchReposTool,
+        GitHubStarRepoTool,
+        GitHubUnstarRepoTool,
+        GitHubListIssuesTool,
+        GitHubGetIssueTool,
+        GitHubCreateIssueTool,
+        GitHubUpdateIssueTool,
+        GitHubCommentIssueTool,
+        GitHubCloseIssueTool,
+        GitHubListPrsTool,
+        GitHubGetPrTool,
+        GitHubCreatePrTool,
+        GitHubCommentPrTool,
+        GitHubMergePrTool,
+    ],
+    "read:user": [
+        GitHubGetMeTool,
+        GitHubGetUserTool,
+    ],
+    "gist": [
+        GitHubListGistsTool,
+        GitHubCreateGistTool,
+        GitHubGetGistTool,
+    ],
+}
+
 
 def _normalize_google_scope(scope: str) -> str:
     """Extract the suffix after '/auth/' from a full Google scope URL.
@@ -228,6 +283,9 @@ def _all_scoped_tool_names() -> frozenset[str]:
     for classes in X_SCOPE_TOOLS.values():
         for cls in classes:
             names.add(cls().name)
+    for classes in GITHUB_SCOPE_TOOLS.values():
+        for cls in classes:
+            names.add(cls().name)
     return frozenset(names)
 
 
@@ -237,6 +295,7 @@ ALL_SCOPED_TOOL_NAMES: frozenset[str] = _all_scoped_tool_names()
 def get_tools_for_scopes(
     google_scopes: list[str] | None = None,
     x_scopes: list[str] | None = None,
+    github_scopes: list[str] | None = None,
 ) -> dict[str, type[Tool]]:
     """Return ``{tool_name: tool_class}`` for all tools enabled by *scopes*.
 
@@ -251,6 +310,10 @@ def get_tools_for_scopes(
 
     for scope in x_scopes or []:
         for cls in X_SCOPE_TOOLS.get(scope, []):
+            result[cls().name] = cls
+
+    for scope in github_scopes or []:
+        for cls in GITHUB_SCOPE_TOOLS.get(scope, []):
             result[cls().name] = cls
 
     return result
