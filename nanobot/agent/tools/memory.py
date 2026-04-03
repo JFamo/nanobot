@@ -101,6 +101,7 @@ class UpdateBotIdentityTool(Tool):
 
     @staticmethod
     def _update_name(content: str, new_name: str) -> str:
+        # Case 1: Standard format — "# Soul" header followed by "I am <name>"
         pattern = r"^(# Soul\s*\n\s*I am )\S+(\s.*|$)"
         if re.search(pattern, content, re.MULTILINE):
             return re.sub(
@@ -109,14 +110,32 @@ class UpdateBotIdentityTool(Tool):
                 content,
                 count=1,
             )
+
         if content.strip():
-            return re.sub(
-                r"^# Soul\s*$",
-                f"# Soul\n\nI am {new_name}, a personal AI assistant.",
-                content,
-                count=1,
-                flags=re.MULTILINE,
-            )
+            # Case 2: Has "# Soul" header but no "I am" line — insert name after header
+            if re.search(r"^# Soul\s*$", content, re.MULTILINE):
+                return re.sub(
+                    r"^# Soul\s*$",
+                    f"# Soul\n\nI am {new_name}, a personal AI assistant.",
+                    content,
+                    count=1,
+                    flags=re.MULTILINE,
+                )
+
+            # Case 3: No "# Soul" header but starts with "I am <name>" — replace name, add header
+            if re.match(r"\s*I am \S+", content):
+                content = re.sub(
+                    r"^(\s*I am )\S+",
+                    rf"I am {new_name}",
+                    content,
+                    count=1,
+                )
+                return f"# Soul\n\n{content.strip()}\n"
+
+            # Case 4: Non-empty content with no recognizable format — prepend identity + header
+            return f"# Soul\n\nI am {new_name}.\n\n{content.strip()}\n"
+
+        # Case 5: Empty — create full template
         return f"# Soul\n\nI am {new_name}, a personal AI assistant.\n\n## Personality\n\n- Helpful and friendly\n\n## Values\n\n- User privacy and safety\n\n## Communication Style\n\n- Be clear and direct\n"
 
     @staticmethod

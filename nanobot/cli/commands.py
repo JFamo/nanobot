@@ -592,14 +592,16 @@ def gateway(
 
         async def handle_identity(request):
             """Return the bot's display name extracted from SOUL.md."""
-            soul_path = workspace / "SOUL.md"
+            soul_path = config.workspace_path / "SOUL.md"
             name = None
             try:
                 if soul_path.exists():
                     text = soul_path.read_text(encoding="utf-8")
                     m = re.search(r"^# Soul\s*\n\s*I am (\S+)", text, re.MULTILINE)
+                    if not m:
+                        m = re.match(r"\s*I am (\S+)", text)
                     if m:
-                        raw = m.group(1).rstrip(",")
+                        raw = m.group(1).rstrip(".,!;:")
                         if raw.lower() != "nanobot":
                             name = raw
             except Exception as e:
