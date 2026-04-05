@@ -4,9 +4,13 @@ These tools execute silently (no user confirmation) and persist information
 to the workspace markdown files that form the bot's long-term context.
 """
 
+import asyncio
+import os
 import re
 from pathlib import Path
 from typing import Any
+
+from loguru import logger
 
 from nanobot.agent.tools.base import Tool
 
@@ -82,6 +86,8 @@ class UpdateBotIdentityTool(Tool):
             soul_path.parent.mkdir(parents=True, exist_ok=True)
             soul_path.write_text(content, encoding="utf-8")
 
+            asyncio.create_task(self._notify_coordinator(bot_name))
+
             changes = [f"name → {bot_name}"]
             if personality_traits:
                 changes.append("personality")
@@ -93,6 +99,31 @@ class UpdateBotIdentityTool(Tool):
             return f"[memory_saved] Updated bot identity: {', '.join(changes)}"
         except Exception as e:
             return f"Error updating bot identity: {e}"
+
+    @staticmethod
+    async def _notify_coordinator(display_name: str) -> None:
+        """Fire-and-forget POST to the coordinator identity endpoint.
+
+        Persists the display name in MongoDB and triggers a
+        ``bot_name_updated`` SSE event for connected browser clients.
+        """
+        coordinator_url = os.environ.get("COORDINATOR_URL", "")
+        bot_id = os.environ.get("BOT_ID", "")
+        if not coordinator_url or not bot_id:
+            return
+        try:
+            from nanobot.coordinator.client import auth_headers
+            import httpx
+
+            url = f"{coordinator_url}/api/v1/bots/{bot_id}/identity"
+            async with httpx.AsyncClient(timeout=5) as client:
+                await client.post(
+                    url,
+                    json={"display_name": display_name},
+                    headers=auth_headers(),
+                )
+        except Exception as exc:
+            logger.debug("Failed to notify coordinator of identity update: {}", exc)
 
     def _resolve_soul_path(self) -> Path:
         if self._workspace:
