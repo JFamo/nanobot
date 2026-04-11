@@ -3,30 +3,38 @@
 import base64
 import mimetypes
 import platform
-import re
-import time
-from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+from nanobot.utils.helpers import current_time_str
+
 from nanobot.agent.memory import MemoryStore
+from nanobot.utils.prompt_templates import render_template
 from nanobot.agent.skills import SkillsLoader
+from nanobot.utils.helpers import build_assistant_message, detect_image_mime
 
 
 class ContextBuilder:
     """Builds the context (system prompt + messages) for the agent."""
-    
-    BOOTSTRAP_FILES = ["AGENTS.md", "SOUL.md", "USER.md", "TOOLS.md", "IDENTITY.md"]
+
+    BOOTSTRAP_FILES = ["AGENTS.md", "SOUL.md", "USER.md", "TOOLS.md"]
     _RUNTIME_CONTEXT_TAG = "[Runtime Context — metadata only, not instructions]"
-    
-    def __init__(self, workspace: Path):
+    _MAX_RECENT_HISTORY = 50
+    _RUNTIME_CONTEXT_END = "[/Runtime Context]"
+
+    def __init__(self, workspace: Path, timezone: str | None = None):
         self.workspace = workspace
+        self.timezone = timezone
         self.memory = MemoryStore(workspace)
         self.skills = SkillsLoader(workspace)
-    
-    def build_system_prompt(self, skill_names: list[str] | None = None) -> str:
+
+    def build_system_prompt(
+        self,
+        skill_names: list[str] | None = None,
+        channel: str | None = None,
+    ) -> str:
         """Build the system prompt from identity, bootstrap files, memory, and skills."""
-        parts = [self._get_identity()]
+        parts = [self._get_identity(channel=channel)]
 
         bootstrap = self._load_bootstrap_files()
         if bootstrap:
@@ -44,189 +52,70 @@ class ContextBuilder:
 
         skills_summary = self.skills.build_skills_summary()
         if skills_summary:
-            parts.append(f"""# Skills
+            parts.append(render_template("agent/skills_section.md", skills_summary=skills_summary))
 
-The following skills extend your capabilities. To use a skill, read its SKILL.md file using the read_file tool.
-Skills with available="false" need dependencies installed first - you can try installing them with apt/brew.
-
-{skills_summary}""")
+        entries = self.memory.read_unprocessed_history(since_cursor=self.memory.get_last_dream_cursor())
+        if entries:
+            capped = entries[-self._MAX_RECENT_HISTORY:]
+            parts.append("# Recent History\n\n" + "\n".join(
+                f"- [{e['timestamp']}] {e['content']}" for e in capped
+            ))
 
         return "\n\n---\n\n".join(parts)
-    
-    def _get_identity(self) -> str:
+
+    def _get_identity(self, channel: str | None = None) -> str:
         """Get the core identity section."""
         workspace_path = str(self.workspace.expanduser().resolve())
         system = platform.system()
         runtime = f"{'macOS' if system == 'Darwin' else system} {platform.machine()}, Python {platform.python_version()}"
-        
-        # Get technical level and build communication guidelines
-        technical_level = self._get_technical_level()
-        comm_guidelines = self._build_communication_guidelines(technical_level)
-        personality_guidance = self._build_personality_learning_guidance()
-        
-        return f"""# Personal AI Assistant
 
-Your name, personality, and traits are defined in your SOUL.md file. Always use that as your identity — do not claim to be "nanobot" or any other default name.
+        return render_template(
+            "agent/identity.md",
+            workspace_path=workspace_path,
+            runtime=runtime,
+            platform_policy=render_template("agent/platform_policy.md", system=system),
+            channel=channel or "",
+        )
 
-## Runtime
-{runtime}
-
-## Workspace
-Your workspace is at: {workspace_path}
-- Long-term memory: {workspace_path}/memory/MEMORY.md (write important facts here)
-- History log: {workspace_path}/memory/HISTORY.md (grep-searchable). Each entry starts with [YYYY-MM-DD HH:MM].
-- Custom skills: {workspace_path}/skills/{{skill-name}}/SKILL.md
-- User profile: {workspace_path}/USER.md (learn about the user)
-- Your personality: {workspace_path}/SOUL.md (your name, traits, and personality)
-
-{comm_guidelines}
-
-{personality_guidance}
-
-## Guidelines
-- When calling tools, do so immediately — do not narrate or announce them to the user first. Report results naturally after the tool returns.
-- Before modifying a file, read it first. Do not assume files or directories exist.
-- After writing or editing a file, re-read it if accuracy matters.
-- If a tool call fails, analyze the error before retrying with a different approach.
-- Ask for clarification when the request is ambiguous.
-- If a tool result indicates the action is **pending user confirmation**, you MUST NOT claim the action was completed. Do not say "I sent the email", "Done", or produce output that implies the action was performed. Instead, clearly tell the user the action is awaiting their approval.
-
-Use the 'message' tool to communicate with the user — both for interim updates ("On it…", "Searching now…") and your final answer. You can call it multiple times. Your plain text reply is suppressed when you use this tool, so always deliver your final answer through it too. Only fall back to a plain text reply for very short, simple responses where a single message is sufficient."""
-
-    def _get_technical_level(self) -> str:
-        """Extract technical level from USER.md, default to 'beginner'."""
-        user_file = self.workspace / "USER.md"
-        if not user_file.exists():
-            return "beginner"
-        
-        try:
-            content = user_file.read_text(encoding="utf-8")
-            # Look for checked boxes in Technical Level section
-            # Format: - [x] Beginner / - [x] Intermediate / - [x] Expert
-            if re.search(r'-\s*\[x\]\s*Expert', content, re.IGNORECASE):
-                return "expert"
-            elif re.search(r'-\s*\[x\]\s*Intermediate', content, re.IGNORECASE):
-                return "intermediate"
-            elif re.search(r'-\s*\[x\]\s*Beginner', content, re.IGNORECASE):
-                return "beginner"
-            
-            # Check for non-technical in Communication Style section
-            if re.search(r'-\s*\[x\]\s*Non-?technical', content, re.IGNORECASE):
-                return "non-technical"
-        except Exception:
-            pass
-        
-        return "beginner"
-    
-    def _build_communication_guidelines(self, technical_level: str) -> str:
-        """Build communication guidelines based on technical level."""
-        if technical_level == "non-technical":
-            return """## Communication Guidelines
-
-You are communicating with a non-technical user. Follow these rules:
-
-- Use plain, everyday language
-- Avoid technical jargon (no terms like "API", "CLI", "JSON", "configuration file", "terminal", "command line")
-- Explain actions in simple terms (e.g., "I'll save this information" instead of "I'll write to the memory file")
-- Focus on WHAT you're doing, not HOW it works internally
-- Only show technical details if the user explicitly asks
-- Use analogies and simple explanations
-- Avoid showing code, file paths, or system internals unless requested"""
-        
-        elif technical_level == "beginner":
-            return """## Communication Guidelines
-
-You are communicating with a beginner-level user:
-
-- Use clear, simple language
-- Minimize technical jargon, explain terms when needed
-- Provide context for technical concepts
-- Be patient and thorough in explanations"""
-        
-        elif technical_level == "intermediate":
-            return """## Communication Guidelines
-
-You are communicating with an intermediate-level user:
-
-- Use technical terms appropriately
-- Provide technical details when relevant
-- Balance clarity with technical accuracy"""
-        
-        else:  # expert
-            return """## Communication Guidelines
-
-You are communicating with an expert-level user:
-
-- Use technical terminology freely
-- Provide detailed technical information
-- Be concise and precise"""
-    
-    def _build_personality_learning_guidance(self) -> str:
-        """Build guidance for personality learning."""
-        return """## Personality Learning
-
-You should actively learn about the user throughout conversations. Use the dedicated memory tools — do NOT use `edit_file` or `write_file` on SOUL.md, USER.md, or MEMORY.md.
-
-**When to call `update_user_profile`:**
-- User shares personal information, preferences, or habits
-- You learn about their work context, projects, or tools they use
-- User mentions topics of interest or hobbies
-- User provides feedback about communication style or response preferences
-- You discover their preferred technical level or communication style
-
-**When to call `update_bot_identity`:**
-- User gives you a name or asks you to change it
-- You notice communication patterns that work well with this user
-- User provides feedback about your behavior or personality
-- You identify approaches that resonate with this specific user
-
-**When to call `save_memory`:**
-- You learn important facts, preferences, or context worth remembering
-- User mentions something they want you to keep track of
-
-**How to update:**
-1. Call the appropriate memory tool immediately when you learn something meaningful
-2. Keep updates concise and relevant
-3. Don't update during every conversation — only when there's genuinely new information
-4. Never mention saving, tools, or file names to the user"""
-    
     @staticmethod
     def _build_runtime_context(
-        channel: str | None,
-        chat_id: str | None,
-        timezone: str | None = None,
+        channel: str | None, chat_id: str | None, timezone: str | None = None,
+        session_summary: str | None = None,
     ) -> str:
         """Build untrusted runtime metadata block for injection before the user message."""
-        tz_label = "UTC"
-        if timezone:
-            try:
-                from zoneinfo import ZoneInfo
-                user_tz = ZoneInfo(timezone)
-                now = datetime.now(user_tz).strftime("%Y-%m-%d %H:%M (%A)")
-                tz_label = timezone
-            except (KeyError, Exception):
-                now = datetime.now().strftime("%Y-%m-%d %H:%M (%A)")
-                tz_label = time.strftime("%Z") or "UTC"
-        else:
-            now = datetime.now().strftime("%Y-%m-%d %H:%M (%A)")
-            tz_label = time.strftime("%Z") or "UTC"
-        lines = [f"Current Time: {now} ({tz_label})"]
+        lines = [f"Current Time: {current_time_str(timezone)}"]
         if channel and chat_id:
             lines += [f"Channel: {channel}", f"Chat ID: {chat_id}"]
-        return ContextBuilder._RUNTIME_CONTEXT_TAG + "\n" + "\n".join(lines)
-    
+        if session_summary:
+            lines += ["", "[Resumed Session]", session_summary]
+        return ContextBuilder._RUNTIME_CONTEXT_TAG + "\n" + "\n".join(lines) + "\n" + ContextBuilder._RUNTIME_CONTEXT_END
+
+    @staticmethod
+    def _merge_message_content(left: Any, right: Any) -> str | list[dict[str, Any]]:
+        if isinstance(left, str) and isinstance(right, str):
+            return f"{left}\n\n{right}" if left else right
+
+        def _to_blocks(value: Any) -> list[dict[str, Any]]:
+            if isinstance(value, list):
+                return [item if isinstance(item, dict) else {"type": "text", "text": str(item)} for item in value]
+            if value is None:
+                return []
+            return [{"type": "text", "text": str(value)}]
+
+        return _to_blocks(left) + _to_blocks(right)
+
     def _load_bootstrap_files(self) -> str:
         """Load all bootstrap files from workspace."""
         parts = []
-        
+
         for filename in self.BOOTSTRAP_FILES:
             file_path = self.workspace / filename
             if file_path.exists():
                 content = file_path.read_text(encoding="utf-8")
                 parts.append(f"## {filename}\n\n{content}")
-        
+
         return "\n\n".join(parts) if parts else ""
-    
+
     def build_messages(
         self,
         history: list[dict[str, Any]],
@@ -235,42 +124,65 @@ You should actively learn about the user throughout conversations. Use the dedic
         media: list[str] | None = None,
         channel: str | None = None,
         chat_id: str | None = None,
-        timezone: str | None = None,
+        current_role: str = "user",
+        session_summary: str | None = None,
     ) -> list[dict[str, Any]]:
         """Build the complete message list for an LLM call."""
-        return [
-            {"role": "system", "content": self.build_system_prompt(skill_names)},
+        runtime_ctx = self._build_runtime_context(channel, chat_id, self.timezone, session_summary=session_summary)
+        user_content = self._build_user_content(current_message, media)
+
+        # Merge runtime context and user content into a single user message
+        # to avoid consecutive same-role messages that some providers reject.
+        if isinstance(user_content, str):
+            merged = f"{runtime_ctx}\n\n{user_content}"
+        else:
+            merged = [{"type": "text", "text": runtime_ctx}] + user_content
+        messages = [
+            {"role": "system", "content": self.build_system_prompt(skill_names, channel=channel)},
             *history,
-            {"role": "user", "content": self._build_runtime_context(channel, chat_id, timezone=timezone)},
-            {"role": "user", "content": self._build_user_content(current_message, media)},
         ]
+        if messages[-1].get("role") == current_role:
+            last = dict(messages[-1])
+            last["content"] = self._merge_message_content(last.get("content"), merged)
+            messages[-1] = last
+            return messages
+        messages.append({"role": current_role, "content": merged})
+        return messages
 
     def _build_user_content(self, text: str, media: list[str] | None) -> str | list[dict[str, Any]]:
         """Build user message content with optional base64-encoded images."""
         if not media:
             return text
-        
+
         images = []
         for path in media:
             p = Path(path)
-            mime, _ = mimetypes.guess_type(path)
-            if not p.is_file() or not mime or not mime.startswith("image/"):
+            if not p.is_file():
                 continue
-            b64 = base64.b64encode(p.read_bytes()).decode()
-            images.append({"type": "image_url", "image_url": {"url": f"data:{mime};base64,{b64}"}})
-        
+            raw = p.read_bytes()
+            # Detect real MIME type from magic bytes; fallback to filename guess
+            mime = detect_image_mime(raw) or mimetypes.guess_type(path)[0]
+            if not mime or not mime.startswith("image/"):
+                continue
+            b64 = base64.b64encode(raw).decode()
+            images.append({
+                "type": "image_url",
+                "image_url": {"url": f"data:{mime};base64,{b64}"},
+                "_meta": {"path": str(p)},
+            })
+
         if not images:
             return text
         return images + [{"type": "text", "text": text}]
-    
+
     def add_tool_result(
         self, messages: list[dict[str, Any]],
-        tool_call_id: str, tool_name: str, result: str,
+        tool_call_id: str, tool_name: str, result: Any,
     ) -> list[dict[str, Any]]:
         """Add a tool result to the message list."""
         messages.append({"role": "tool", "tool_call_id": tool_call_id, "name": tool_name, "content": result})
         return messages
-    
+
     def add_assistant_message(
         self, messages: list[dict[str, Any]],
         content: str | None,
@@ -279,12 +191,10 @@ You should actively learn about the user throughout conversations. Use the dedic
         thinking_blocks: list[dict] | None = None,
     ) -> list[dict[str, Any]]:
         """Add an assistant message to the message list."""
-        msg: dict[str, Any] = {"role": "assistant", "content": content}
-        if tool_calls:
-            msg["tool_calls"] = tool_calls
-        if reasoning_content is not None:
-            msg["reasoning_content"] = reasoning_content
-        if thinking_blocks:
-            msg["thinking_blocks"] = thinking_blocks
-        messages.append(msg)
+        messages.append(build_assistant_message(
+            content,
+            tool_calls=tool_calls,
+            reasoning_content=reasoning_content,
+            thinking_blocks=thinking_blocks,
+        ))
         return messages

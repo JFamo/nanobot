@@ -2,7 +2,7 @@ FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim
 
 # Install Node.js 20 for the WhatsApp bridge
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends curl ca-certificates gnupg git jq && \
+    apt-get install -y --no-install-recommends curl ca-certificates gnupg git bubblewrap openssh-client && \
     mkdir -p /etc/apt/keyrings && \
     curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg && \
     echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_20.x nodistro main" > /etc/apt/sources.list.d/nodesource.list && \
@@ -27,30 +27,24 @@ RUN uv pip install --system --no-cache .
 
 # Build the WhatsApp bridge
 WORKDIR /app/bridge
-RUN npm install && npm run build
+RUN git config --global --add url."https://github.com/".insteadOf ssh://git@github.com/ && \
+    git config --global --add url."https://github.com/".insteadOf git@github.com: && \
+    npm install && npm run build
 WORKDIR /app
 
-# Install axios into a shared lib directory and expose via NODE_PATH
-RUN mkdir -p /usr/local/lib/node_modules_shared && \
-    cd /usr/local/lib/node_modules_shared && \
-    npm init -y && \
-    npm install axios
-ENV NODE_PATH=/usr/local/lib/node_modules_shared/node_modules
+# Create non-root user and config directory
+RUN useradd -m -u 1000 -s /bin/bash nanobot && \
+    mkdir -p /home/nanobot/.nanobot && \
+    chown -R nanobot:nanobot /home/nanobot /app
 
-# # Install gog (gogcli) — Google Suite CLI for Gmail, Calendar, Drive, etc.
-# RUN GOG_TAG=$(curl -fsSL https://api.github.com/repos/steipete/gogcli/releases/latest | jq -r '.tag_name') && \
-#     GOG_VERSION=${GOG_TAG#v} && \
-#     curl -fsSL "https://github.com/steipete/gogcli/releases/download/${GOG_TAG}/gogcli_${GOG_VERSION}_linux_amd64.tar.gz" \
-#       -o /tmp/gogcli.tar.gz && \
-#     tar -xz -C /usr/local/bin -f /tmp/gogcli.tar.gz gog && \
-#     chmod +x /usr/local/bin/gog && \
-#     rm /tmp/gogcli.tar.gz
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN sed -i 's/\r$//' /usr/local/bin/entrypoint.sh && chmod +x /usr/local/bin/entrypoint.sh
 
-# Create config directory
-RUN mkdir -p /root/.nanobot
+USER nanobot
+ENV HOME=/home/nanobot
 
 # Gateway default port
 EXPOSE 18790
 
-ENTRYPOINT ["nanobot"]
+ENTRYPOINT ["entrypoint.sh"]
 CMD ["status"]
