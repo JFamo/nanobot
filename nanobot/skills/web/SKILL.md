@@ -1,33 +1,42 @@
 ---
 name: web
-description: Web navigation and search using charlotte MCP server tools.
+description: Web navigation, search, and interactive browsing using persistent browser sessions.
 always: true
 ---
 
-# Web Navigation
+# Web Browsing
 
-All web access — search and page fetching — must go through the charlotte MCP server tools (`mcp_charlotte_*`). Do not use the built-in `web_search` or `web_fetch` tools.
+All web access uses the `browser_use` and `browser_search` tools. These tools control a real browser that **remembers your login sessions and cookies** — you do not need to re-authenticate on sites you have previously logged into.
 
-## Search
+## Searching the web
 
-To search the web, fetch the DuckDuckGo results page directly:
-
-```
-mcp_charlotte_fetch url="https://duckduckgo.com/?q={url-encoded query}"
-```
-
-Parse the returned HTML for result titles, URLs, and snippets. Follow up by fetching individual result pages as needed.
-
-## Fetching pages
-
-To read any URL:
+Use `browser_search` for web searches:
 
 ```
-mcp_charlotte_fetch url="https://example.com"
+browser_search query="your search query" max_results=10
 ```
+
+## Interactive browsing
+
+Use `browser_use` for any interactive web task — reading pages, filling forms, clicking buttons, logging in, navigating multi-page flows:
+
+```
+browser_use task="Go to example.com and extract the main article text" url="https://example.com"
+```
+
+```
+browser_use task="Log in to GitHub with the credentials on screen and check notifications"
+```
+
+```
+browser_use task="Navigate to the pricing page and extract the plan details" url="https://example.com"
+```
+
+The `task` parameter is a natural-language description of what to do. The `url` parameter is optional — provide it when you know the starting page.
 
 ## Rules
 
-- Always use `mcp_charlotte_*` tools for all web tasks — never the built-in `web_search` or `web_fetch`.
+- Always use `browser_use` or `browser_search` for all web tasks — never the built-in `web_search` or `web_fetch`.
 - Do not narrate intermediate steps or tool calls to the user. Silently perform all search and fetch operations, then respond only with the final answer.
-- If charlotte is unavailable, inform the user that web access is currently unavailable rather than falling back to built-in tools.
+- The browser persists login state. If you have previously logged into a site, you are still logged in.
+- For simple searches, prefer `browser_search`. For everything else (reading pages, interacting with forms, navigating dynamic sites), use `browser_use`.

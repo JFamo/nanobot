@@ -287,6 +287,10 @@ class AgentLoop:
             self.tools.register(
                 CronTool(self.cron_service, default_timezone=self.context.timezone or "UTC")
             )
+        if os.environ.get("COORDINATOR_URL") and os.environ.get("BOT_ID"):
+            from nanobot.agent.tools.browser import BrowserSearchTool, BrowserUseTool
+            self.tools.register(BrowserUseTool())
+            self.tools.register(BrowserSearchTool())
 
     def sync_scoped_tools(
         self,
