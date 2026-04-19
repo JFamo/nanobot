@@ -1,42 +1,66 @@
 ---
 name: web
-description: Web navigation, search, and interactive browsing using persistent browser sessions.
+description: Web navigation and search using charlotte MCP for basic browsing and browser_use for complex interactive tasks.
 always: true
 ---
 
 # Web Browsing
 
-All web access uses the `browser_use` and `browser_search` tools. These tools control a real browser that **remembers your login sessions and cookies** — you do not need to re-authenticate on sites you have previously logged into.
+You have two web access methods. Choose the right one for the task:
 
-## Searching the web
+## Basic browsing — charlotte (`mcp_charlotte_*`)
 
-Use `browser_search` for web searches:
+Use charlotte for **simple, fast operations**: searching the web and reading page content.
 
-```
-browser_search query="your search query" max_results=10
-```
-
-## Interactive browsing
-
-Use `browser_use` for any interactive web task — reading pages, filling forms, clicking buttons, logging in, navigating multi-page flows:
+### Search
 
 ```
-browser_use task="Go to example.com and extract the main article text" url="https://example.com"
+mcp_charlotte_fetch url="https://duckduckgo.com/?q={url-encoded query}"
+```
+
+Parse the returned HTML for result titles, URLs, and snippets. Follow up by fetching individual result pages as needed.
+
+### Fetching pages
+
+```
+mcp_charlotte_fetch url="https://example.com"
+```
+
+## Complex interactive browsing — `browser_use`
+
+Use `browser_use` for tasks that require **real browser interaction**: logging into sites, filling forms, clicking buttons, navigating multi-step flows, interacting with JavaScript-heavy pages, or any task where you need persistent login state.
+
+The browser **remembers your login sessions and cookies** across uses — you do not need to re-authenticate on sites you have previously logged into.
+
+```
+browser_use task="Log in to GitHub and check my notifications"
 ```
 
 ```
-browser_use task="Log in to GitHub with the credentials on screen and check notifications"
+browser_use task="Fill out the contact form with the provided details" url="https://example.com/contact"
 ```
 
 ```
-browser_use task="Navigate to the pricing page and extract the plan details" url="https://example.com"
+browser_use task="Navigate through the checkout flow and extract the order summary" url="https://shop.example.com/cart"
 ```
 
 The `task` parameter is a natural-language description of what to do. The `url` parameter is optional — provide it when you know the starting page.
 
+## When to use which
+
+| Task | Tool |
+|------|------|
+| Search the web | `mcp_charlotte_fetch` (DuckDuckGo) |
+| Read a static page | `mcp_charlotte_fetch` |
+| Log in to a site | `browser_use` |
+| Fill out a form | `browser_use` |
+| Click through a multi-page flow | `browser_use` |
+| Interact with a JavaScript-heavy app | `browser_use` |
+| Any task needing persistent login state | `browser_use` |
+
 ## Rules
 
-- Always use `browser_use` or `browser_search` for all web tasks — never the built-in `web_search` or `web_fetch`.
-- Do not narrate intermediate steps or tool calls to the user. Silently perform all search and fetch operations, then respond only with the final answer.
-- The browser persists login state. If you have previously logged into a site, you are still logged in.
-- For simple searches, prefer `browser_search`. For everything else (reading pages, interacting with forms, navigating dynamic sites), use `browser_use`.
+- Use `mcp_charlotte_*` for basic search and page fetching. Use `browser_use` for anything interactive or requiring login.
+- Do not use the built-in `web_search` or `web_fetch` tools.
+- Do not narrate intermediate steps or tool calls to the user. Silently perform all operations, then respond only with the final answer.
+- If charlotte is unavailable, fall back to `browser_use` for all web tasks.
